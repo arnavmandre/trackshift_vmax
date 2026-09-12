@@ -52,7 +52,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
   <div class="stage" id="stage" aria-label="Original video; drop local video files here">
    <video id="video" playsinline preload="metadata"></video>
    <div class="video-empty" id="videoEmpty"><p>Original video frame</p><button id="emptyOpen">Open a video to begin</button><p class="tiny" style="margin-top:10px">or drag and drop files here</p></div>
-   <div class="stage-top"><div class="tyres"><span>FL</span><span>FR</span><span>RL</span><span>RR</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span class="muted" id="carCaption">Car: unassigned · Driver: Unknown</span><span class="muted" id="liveReadout"></span></div></div>
+   <div class="stage-top"><div class="tyres"><span>FL</span><span>FR</span><span>RL</span><span>RR</span></div><span class="muted" id="carCaption">Car: unassigned · Driver: Unknown</span></div>
    <span class="stage-foot" id="stageFoot">Local playback · no model results</span><div class="crop-selection" id="cropSelection"></div><div class="cropHint" id="cropHint" hidden>Drag a rectangle around the tyre area</div>
   </div>
   <div class="transport">
@@ -465,14 +465,6 @@ function renderIntervals(){
  for(const [items,origin] of [[x?.original?.candidates||[],sim?'SIMULATED':'Imported'],[x?.intervals||[],'Manual']])
   for(const c of items){const wrap=document.createElement('span'),b=document.createElement('button');b.textContent=`${origin} ${timeText(c.start)}–${timeText(c.end)}`;b.onclick=()=>seek(c.start);wrap.append(b);if(origin==='Manual'){const r=document.createElement('button');r.textContent='×';r.setAttribute('aria-label','Remove manual interval');r.onclick=()=>change('remove interval',v=>v.intervals=v.intervals.filter(a=>a.id!==c.id));wrap.append(r);}intervals.append(wrap);}
 }
-// Live readout is confidence only -- the off-track/in-track verdict lives in
-// the clip queue instead (see list()'s .clip-verdict), not on the video overlay.
-function updateLiveReadout(o){
- const el=$('liveReadout');if(!el)return;
- if(o){el.textContent=`Confidence score: ${(o.confidence*100).toFixed(0)}%`;el.style.cssText='font-weight:700;font-size:13px;color:#f5f5f5;background:#00000080;padding:2px 8px;border-radius:4px';}
- else if(hasVideo()&&ev()?.original){el.textContent='Confidence score: no detection this frame';el.style.cssText='font-weight:700;font-size:13px;color:#f5f5f5;background:#00000080;padding:2px 8px;border-radius:4px';}
- else el.textContent='';
-}
 function draw(){
  const canvas=$('evidenceOverlay'),banner=$('evidenceBanner');if(!canvas)return;
  const r=$('stage').getBoundingClientRect();canvas.width=Math.round(r.width);canvas.height=Math.round(r.height);
@@ -488,16 +480,16 @@ function draw(){
   function points(pts,color){g.strokeStyle=color;g.fillStyle=color;g.font='bold 12px Arial';for(const k of E.tyres)if(pts[k]){const [x,y]=pt(pts[k]);g.beginPath();g.arc(x,y,6,0,7);g.stroke();g.fillText(k,x+9,y-7);}}
   if($('wbOriginal').checked)points(o.points,'#55ddff');if($('wbAdjusted').checked&&ev().edits[o.id])points(e.points,'#ffbf55');
   if(e.line){const [a,b]=e.line.map(pt);g.strokeStyle='#ffffff';g.lineWidth=2;g.beginPath();g.moveTo(...a);g.lineTo(...b);g.stroke();g.fillStyle='#fff';g.fillText('A',a[0],a[1]-8);g.fillText('B',b[0],b[1]-8);}
-  updateLiveReadout(o);
   return;
  }
  if(o&&!match)banner.hidden=false,banner.textContent='Manual / imported evidence overlay · jump to selected observation';else banner.hidden=true;
  // Passive playback path: no explicit selection in view, so auto-track whatever
  // imported observation is nearest the current frame -- same 0.05s / no-carry
  // rule as E.nearest(), just applied every frame instead of only on demand.
- if(!hasVideo()){updateLiveReadout(null);return;}
+ // Confidence itself is shown only once per clip (the queue's mean score) to
+ // avoid two differently-scoped "confidence" numbers on screen at once.
+ if(!hasVideo())return;
  const live=E.nearest(ev()?.original,video.currentTime);
- updateLiveReadout(live);
  if(!live)return;
  const vr=videoRect(),sx=vr.width/video.videoWidth,sy=vr.height/video.videoHeight,ox=vr.left-r.left,oy=vr.top-r.top,pt=p=>[ox+p[0]*sx,oy+p[1]*sy];
  g.strokeStyle='#7df5c1';g.fillStyle='#7df5c1';g.font='bold 12px Arial';
