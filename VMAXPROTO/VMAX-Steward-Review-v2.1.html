@@ -486,6 +486,11 @@ function draw(){
   banner.hidden=false;
   banner.textContent=ev()?.original?.source==='simulated'?'SIMULATED OUTPUT — NOT VIDEO MEASUREMENTS':'Manual / imported evidence overlay';
   const vr=videoRect(),sx=vr.width/video.videoWidth,sy=vr.height/video.videoHeight,ox=vr.left-r.left,oy=vr.top-r.top,pt=p=>[ox+p[0]*sx,oy+p[1]*sy],e=effective(o);
+  // Keep the model's tyre points visible as a reference while measuring --
+  // a new manual observation starts with no points, so without this the
+  // overlay vanished the moment "Measure this frame" was pressed. Skip the
+  // selected observation itself so an imported one isn't drawn twice.
+  drawLiveCars(g,r,o.id);
   function points(pts,color){g.strokeStyle=color;g.fillStyle=color;g.font='bold 12px Arial';for(const k of E.tyres)if(pts[k]){const [x,y]=pt(pts[k]);g.beginPath();g.arc(x,y,6,0,7);g.stroke();g.fillText(k,x+9,y-7);}}
   if($('wbOriginal').checked)points(o.points,'#55ddff');if($('wbAdjusted').checked&&ev().edits[o.id])points(e.points,'#ffbf55');
   if(e.line){const [a,b]=e.line.map(pt);g.strokeStyle='#ffffff';g.lineWidth=2;g.beginPath();g.moveTo(...a);g.lineTo(...b);g.stroke();g.fillStyle='#fff';g.fillText('A',a[0],a[1]-8);g.fillText('B',b[0],b[1]-8);}
@@ -498,10 +503,14 @@ function draw(){
  // Confidence itself is shown only once per clip (the queue's mean score) to
  // avoid two differently-scoped "confidence" numbers on screen at once.
  if(!hasVideo())return;
- // "Tyre overlay" off hides the model's tyre points during playback. The
- // measure/edit path above still draws, since those tools need the points.
- if(!$('tyreOverlay').checked)return;
- const live=liveCars(ev()?.original,video.currentTime);
+ drawLiveCars(g,r,null);
+}
+// The model's tyre points for every tracked car at the current frame.
+// "Tyre overlay" off hides these; the steward's own measurement marks are
+// drawn separately and always stay visible.
+function drawLiveCars(g,r,skipId){
+ if(!hasVideo()||!$('tyreOverlay').checked)return;
+ const live=liveCars(ev()?.original,video.currentTime).filter(o=>o.id!==skipId);
  if(!live.length)return;
  const vr=videoRect(),sx=vr.width/video.videoWidth,sy=vr.height/video.videoHeight,ox=vr.left-r.left,oy=vr.top-r.top,pt=p=>[ox+p[0]*sx,oy+p[1]*sy];
  for(const obs of live){
