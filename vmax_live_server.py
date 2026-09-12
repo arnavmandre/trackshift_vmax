@@ -16,7 +16,7 @@ import subprocess
 import threading
 from urllib.parse import unquote, urlsplit
 
-REPO = Path('C:/Users/arnav/OneDrive/Desktop/VMAX_Trackshift')
+REPO = Path(__file__).resolve().parent
 PROTO_HTML = REPO / 'VMAXPROTO' / 'VMAX-Steward-Review-v2.1.html'
 AUTOLOAD_JS = REPO / 'VMAXPROTO' / 'autoload.js'
 
@@ -40,6 +40,11 @@ def mean_confidence(data_dir, clip_id):
     doc = json.loads(prediction_path.read_text())
     scores = [o['confidence'] for o in doc.get('observations', []) if o.get('confidence') is not None]
     return sum(scores) / len(scores) if scores else None
+
+
+def needs_deep_model(data_dir, clip_id):
+    score = mean_confidence(data_dir, clip_id)
+    return score is not None and score < CONFIDENCE_ESCALATION_THRESHOLD
 
 
 def run_better_model(data_dir, clip_id):
@@ -90,6 +95,8 @@ def better_worker_loop(data_dir):
 
 
 def enqueue_better(data_dir, clip_id):
+    if not needs_deep_model(data_dir, clip_id):
+        return 'skipped'
     result_path = data_dir / f'{clip_id}.bettermodel.json'
     with better_jobs_lock:
         current = better_jobs.get(clip_id)
@@ -121,6 +128,8 @@ class Handler(BaseHTTPRequestHandler):
                 for c in manifest['clips']:
                     c['video_url'] = f"/video/{c['id']}.mp4"
                     c['predictions_url'] = f"/predictions/{c['id']}.json"
+                    c['fast_mean_confidence'] = mean_confidence(self.data_dir, c['id'])
+                    c['deep_model_eligible'] = needs_deep_model(self.data_dir, c['id']) and not c.get('playback_only', False)
                 self.respond_bytes(json.dumps(manifest).encode(), 'application/json')
             elif path.startswith('/video/'):
                 self.respond_file(self.data_dir / path[len('/video/'):], 'video/mp4')
@@ -132,7 +141,9 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_error(400)
                     return
                 result_path = self.data_dir / f'{clip_id}.bettermodel.json'
-                if result_path.is_file():
+                if not needs_deep_model(self.data_dir, clip_id):
+                    payload = {'status': 'skipped', 'result': None}
+                elif result_path.is_file():
                     payload = json.loads(result_path.read_text())
                 else:
                     with better_jobs_lock:
@@ -184,7 +195,7 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('--data', default=r'C:/Users/arnav/trackshift_runs/kerb960/vmax_live')
+    p.add_argument('--data', default=str(REPO / 'final_demo'))
     p.add_argument('--port', type=int, default=8010)
     a = p.parse_args()
     data_dir = Path(a.data)

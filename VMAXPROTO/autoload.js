@@ -75,9 +75,12 @@
         const blob = await (await fetch(clip.video_url)).blob();
         urls.set(c.id, URL.createObjectURL(blob));
       }
-      c.remoteVideoUrl = clip.video_url; c.remotePredictionsUrl = clip.predictions_url; c.remoteClipId = clip.id;
+      c.fps = clip.fps || c.fps;
+      const useDeep = !clip.playback_only && clip.deep_model_eligible !== false;
+      if (!useDeep) delete c.betterModel;
+      c.remoteVideoUrl = clip.video_url; c.remotePredictionsUrl = clip.playback_only ? null : clip.predictions_url; c.remoteClipId = useDeep ? clip.id : null;
 
-      if (!analysed(c)) {
+      if (!clip.playback_only && !analysed(c)) {
         choose(c.id);
         if (!hasVideo()) await new Promise(res => video.addEventListener('loadeddata', res, { once: true }));
         const predictions = await (await fetch(clip.predictions_url)).json();
@@ -86,7 +89,7 @@
       // Clips the server auto-escalated (low confidence score) already have a
       // deep-model result waiting; attach it so the badge is right on arrival
       // instead of claiming "Fast model only" for work already done.
-      await refreshBetterModel(c);
+      if (useDeep) await refreshBetterModel(c);
       setProgress(i + 1, manifest.clips.length);
     }
 

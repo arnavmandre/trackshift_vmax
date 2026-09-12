@@ -80,7 +80,7 @@ def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
         'schema': 'vmax.predictions.v1',
         'source': 'model',
         'model_version': f"YOLO26n-pose (fast model) selected.pt@{e.digest(WEIGHTS)[:12]}",
-        'video': {'name': f"{display_name}.mp4", 'width': e.PLAN['width'], 'height': e.PLAN['height'],
+        'video': {'name': f"{display_name}.mp4", 'width': clip_entry['camera_spec']['resolution'][0], 'height': clip_entry['camera_spec']['resolution'][1],
                    'duration': round(clip_entry['frames'] / fps, 4)},
         'observations': observations,
         'candidates': candidates,

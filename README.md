@@ -1,3 +1,5 @@
+> **Current final demo:** Run `start_demo.bat`, then open http://127.0.0.1:8010. The bundled `final_demo/` contains 16 multi-angle clips and saved predictions. Below 80% mean fast confidence uses both models; 80% or higher uses fast only. See [final demo details](final_demo/README.md).
+
 # Trackshift VMAX — new tyre-pose experiment
 
 We are training a new four-tyre-contact model by fine-tuning official pretrained
@@ -170,6 +172,22 @@ remain uncalibrated and real-footage inference, driver naming, telemetry fusion,
 and moving-camera calibration remain outstanding; see REQUIREMENTS_STATUS.md.
 # Lightweight visual previews
 
+For a separate, unscored demo collection, run:
+
+```powershell
+.venv/Scripts/python.exe -m simulator.demo --out C:/Users/arnav/trackshift_runs/my_demo
+```
+
+This generates eight 1920x1080, 60 fps, four-second H.264 clips at CRF 16,
+rendered at 2400x1350 and Lanczos-downsampled for smoother edges,
+with varied liveries, fixed camera viewpoints, lateral excursions and a two-car
+scene. It adds trackside rails, continuous terrain, helmet/mirror/wing details,
+and surface/contact-shadow effects. Set `FFMPEG` to your executable if needed.
+No training or model inference is run. Labels are separate under `sealed/`;
+`manifest.json` records the seed, cameras and video hashes. These are curated
+synthetic demo scenes, not a blind accuracy benchmark once viewed. The underlying
+car geometry and physics remain simplified. Playback is 60 fps; rendering is offline.
+
 The CPU dataset renderer supports opt-in `--appearance enhanced`: world-space
 asphalt/grass/paint variation, a rubber-darkened track band, a sky gradient and
 approximate soft car contact shadows. Surface detail fades below pixel size to
@@ -191,3 +209,13 @@ margins and cameras in `preview.json`; these cases are visual checks, not a new
 accuracy benchmark. For videos, add `--appearance enhanced` to
 `python -m simulator.generate` using a new output directory. Camera variation and
 boundary controls in the preview do not change the training distribution.
+
+To replace the VMAXPROTO website queue with only the latest demo clips:
+
+```powershell
+.venv/Scripts/python.exe -m simulator.install_demo_ui --source C:/Users/arnav/trackshift_runs/demo_eight_1080p60 --destination C:/Users/arnav/trackshift_runs/kerb960/vmax_live --replace
+```
+
+Refresh http://127.0.0.1:8010 after installation. Old videos remain on disk and
+the previous queue is backed up. New clips are playback-only, with no invented
+model predictions.

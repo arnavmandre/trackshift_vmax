@@ -1,0 +1,84 @@
+{
+  "clips": [
+    {
+      "id": "0345af32f4b56d19_a00",
+      "name": "Incident 1 Clip 1.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0345af32f4b56d19_a01",
+      "name": "Incident 1 Clip 2.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0345af32f4b56d19_a02",
+      "name": "Incident 1 Clip 3.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0345af32f4b56d19_a03",
+      "name": "Incident 1 Clip 4.mp4",
+      "fps": 12
+    },
+    {
+      "id": "034764aba12aec43_a00",
+      "name": "Incident 2 Clip 1.mp4",
+      "fps": 12
+    },
+    {
+      "id": "034764aba12aec43_a01",
+      "name": "Incident 2 Clip 2.mp4",
+      "fps": 12
+    },
+    {
+      "id": "034764aba12aec43_a02",
+      "name": "Incident 2 Clip 3.mp4",
+      "fps": 12
+    },
+    {
+      "id": "034764aba12aec43_a03",
+      "name": "Incident 2 Clip 4.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0c362e849a1c002b_a00",
+      "name": "Incident 3 Clip 1.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0c362e849a1c002b_a01",
+      "name": "Incident 3 Clip 2.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0c362e849a1c002b_a02",
+      "name": "Incident 3 Clip 3.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0c362e849a1c002b_a03",
+      "name": "Incident 3 Clip 4.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0ccce32ff96d597e_a00",
+      "name": "Incident 4 Clip 1.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0ccce32ff96d597e_a01",
+      "name": "Incident 4 Clip 2.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0ccce32ff96d597e_a02",
+      "name": "Incident 4 Clip 3.mp4",
+      "fps": 12
+    },
+    {
+      "id": "0ccce32ff96d597e_a03",
+      "name": "Incident 4 Clip 4.mp4",
+      "fps": 12
+    }
+  ]
+}
