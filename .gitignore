@@ -9,3 +9,8 @@ output/
 # Local handoff and planning notes (kept on disk, not published)
 *HANDOFF*.md
 docs/superpowers/
+
+# Local / OS junk
+.DS_Store
+__MACOSX/
+.claude/

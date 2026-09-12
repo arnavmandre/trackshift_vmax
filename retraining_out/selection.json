@@ -1,0 +1,20 @@
+{
+  "selected_stage": 2,
+  "weights_sha256": "e4d99f36dcb51a78b30f07af6fcc7aaab88c54ea7501075ea1b11bfb736677e0",
+  "validation_metrics": {
+    "clips": 15,
+    "event_precision": 0.75,
+    "event_recall": 0.42857142857142855,
+    "true_positives": 3,
+    "false_reports": 1,
+    "missed_events": 4,
+    "margin_p50_m": 0.3437565100270401,
+    "margin_p95_m": 1.2355758733126878,
+    "confidence_calibration": "not measured",
+    "matching": "same truth-associated car, temporal IoU >= 0.3, one-to-one",
+    "receipt_sha256": "a407bc99e1d999cdeacf1f506d6b29f34e90652465c669700ce830e9e84ee333",
+    "labels_sha256": "7ae8259f589fe9df5ee2f4d6894b9d82479beda2be281310d14fe9ac3f217da1"
+  },
+  "rule": "maximum validation event F1, then minimum margin P95; no test selection",
+  "test_opened": false
+}
