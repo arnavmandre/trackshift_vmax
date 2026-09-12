@@ -3,10 +3,7 @@
 # Trackshift VMAX — new tyre-pose experiment
 
 We are training a new four-tyre-contact model by fine-tuning official pretrained
-Ultralytics YOLO26 nano pose weights. The previous VMAX-Net weights and application
-are not used in this implementation. This is a new training experiment, not a
-claim to have invented YOLO or its pretrained backbone.
-
+Ultralytics YOLO26 nano pose weights. 
 
 ## What we do 
 
