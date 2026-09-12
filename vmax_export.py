@@ -88,6 +88,7 @@ def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
 
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{clip_entry['id']}.json").write_text(json.dumps(payload, indent=2))
+    (out_dir / f"{clip_entry['id']}.camera.json").write_text(json.dumps(clip_entry['camera_spec'], indent=2))
     shutil.copy2(video_path, out_dir / f"{clip_entry['id']}.mp4")
     print(f"{display_name} ({clip_entry['id']}): {len(observations)} observations, {len(candidates)} candidates", flush=True)
 
