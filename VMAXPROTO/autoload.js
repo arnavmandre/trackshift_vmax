@@ -83,6 +83,10 @@
         const predictions = await (await fetch(clip.predictions_url)).json();
         window.VMAX.importPredictions(E.validate(predictions));
       }
+      // Clips the server auto-escalated (low confidence score) already have a
+      // deep-model result waiting; attach it so the badge is right on arrival
+      // instead of claiming "Fast model only" for work already done.
+      await refreshBetterModel(c);
       setProgress(i + 1, manifest.clips.length);
     }
 

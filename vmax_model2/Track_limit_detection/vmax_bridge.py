@@ -64,7 +64,21 @@ def predict_one_crop(model, processor, image, crop, camera, config, device):
     return {'prediction': prediction, 'reason': reason}
 
 
-def run(video_path, camera, fast_predictions, checkpoint, device):
+def write_progress(progress_path, stage, done, total):
+    """Best-effort progress for a caller polling alongside us. Never fatal --
+    a progress write failing must not lose an otherwise-good inference run."""
+    if not progress_path:
+        return
+    try:
+        Path(progress_path).write_text(json.dumps({'stage': stage, 'done': done, 'total': total}))
+    except OSError:
+        pass
+
+
+def run(video_path, camera, fast_predictions, checkpoint, device, progress_path=None):
+    # Checkpoint load is a meaningful share of total runtime, so it gets its
+    # own reported stage rather than sitting at 0% frame progress.
+    write_progress(progress_path, 'loading_model', 0, 0)
     model, processor, config, _ = bt.load_checkpoint(Path(checkpoint), device)
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
@@ -72,10 +86,12 @@ def run(video_path, camera, fast_predictions, checkpoint, device):
     fps = cap.get(cv2.CAP_PROP_FPS)
     if not fps:
         raise RuntimeError('Could not determine video fps')
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
     by_frame = group_detections_by_frame(fast_predictions, fps)
     per_detection = []
     idx = 0
     try:
+        write_progress(progress_path, 'processing', 0, total_frames)
         while True:
             ok, bgr = cap.read()
             if not ok:
@@ -91,6 +107,7 @@ def run(video_path, camera, fast_predictions, checkpoint, device):
                     result = predict_one_crop(model, processor, image, crop, camera, config, device)
                     per_detection.append({'frame': idx, 'car_index': car_index, **result})
             idx += 1
+            write_progress(progress_path, 'processing', idx, total_frames or idx)
     finally:
         cap.release()
     if not per_detection:
@@ -122,11 +139,13 @@ if __name__ == '__main__':
     p.add_argument('--fast-predictions', required=True)
     p.add_argument('--checkpoint', default=str(DEFAULT_CHECKPOINT))
     p.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu')
+    p.add_argument('--progress-file', default=None,
+                   help='Optional path to write {"stage","done","total"} progress to while running')
     args = p.parse_args()
     try:
         camera = json.loads(Path(args.camera_json).read_text())
         fast_predictions = json.loads(Path(args.fast_predictions).read_text())
-        result = run(args.video, camera, fast_predictions, args.checkpoint, args.device)
+        result = run(args.video, camera, fast_predictions, args.checkpoint, args.device, args.progress_file)
         print(json.dumps(result))
         sys.exit(0)
     except Exception as exc:

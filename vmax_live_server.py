@@ -47,15 +47,20 @@ def run_better_model(data_dir, clip_id):
     video = data_dir / f'{clip_id}.mp4'
     fast_predictions = data_dir / f'{clip_id}.json'
     result_path = data_dir / f'{clip_id}.bettermodel.json'
+    progress_path = data_dir / f'{clip_id}.bettermodel.progress'
     if not camera_json.is_file() or not video.is_file() or not fast_predictions.is_file():
         payload = {'status': 'error', 'result': {'error': 'missing camera_spec, video, or fast-model predictions'}}
         result_path.write_text(json.dumps(payload))
         return payload
-    proc = subprocess.run(
-        [str(BETTER_PYTHON), str(BETTER_BRIDGE),
-         '--video', str(video), '--camera-json', str(camera_json),
-         '--fast-predictions', str(fast_predictions)],
-        capture_output=True, text=True, cwd=str(MODEL2_ROOT), timeout=180)
+    try:
+        proc = subprocess.run(
+            [str(BETTER_PYTHON), str(BETTER_BRIDGE),
+             '--video', str(video), '--camera-json', str(camera_json),
+             '--fast-predictions', str(fast_predictions),
+             '--progress-file', str(progress_path)],
+            capture_output=True, text=True, cwd=str(MODEL2_ROOT), timeout=180)
+    finally:
+        progress_path.unlink(missing_ok=True)
     try:
         parsed = json.loads(proc.stdout)
     except json.JSONDecodeError:
@@ -133,6 +138,14 @@ class Handler(BaseHTTPRequestHandler):
                     with better_jobs_lock:
                         state = better_jobs.get(clip_id, 'not_started')
                     payload = {'status': state, 'result': None}
+                    if state == 'running':
+                        # Real per-frame progress from the bridge, when it has
+                        # got far enough to report any -- never a fake estimate.
+                        try:
+                            payload['progress'] = json.loads(
+                                (self.data_dir / f'{clip_id}.bettermodel.progress').read_text())
+                        except (OSError, json.JSONDecodeError):
+                            pass
                 self.respond_bytes(json.dumps(payload).encode(), 'application/json')
             else:
                 self.send_error(404)
@@ -181,14 +194,18 @@ if __name__ == '__main__':
     threading.Thread(target=better_worker_loop, args=(data_dir,), daemon=True).start()
 
     manifest = json.loads((data_dir / 'clips_manifest.json').read_text())
-    escalated = 0
+    low_confidence = queued = 0
     for c in manifest['clips']:
         score = mean_confidence(data_dir, c['id'])
         if score is not None and score < CONFIDENCE_ESCALATION_THRESHOLD:
-            enqueue_better(data_dir, c['id'])
-            escalated += 1
-    if escalated:
-        print(f'Auto-escalated {escalated} low-confidence clip(s) to the accurate model.', flush=True)
+            low_confidence += 1
+            # Count what was actually queued, not what merely qualified --
+            # already-cached results are skipped and must not be reported as work.
+            if enqueue_better(data_dir, c['id']) == 'queued':
+                queued += 1
+    if low_confidence:
+        print(f'{low_confidence} clip(s) below the {CONFIDENCE_ESCALATION_THRESHOLD:.0%} confidence score threshold; '
+              f'{queued} queued for the deep model, {low_confidence - queued} already cached.', flush=True)
 
     server = ThreadingHTTPServer(('127.0.0.1', a.port), functools.partial(Handler, data_dir=data_dir))
     print(f"Open http://127.0.0.1:{a.port} — friend's prototype UI with live model predictions auto-loaded. Ctrl+C to stop.", flush=True)
