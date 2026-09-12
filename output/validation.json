@@ -1,0 +1,212 @@
+{
+  "fixed_camera_clips": 24,
+  "fixed_camera_resolution": [
+    1280,
+    720
+  ],
+  "world_labels_preserved": true,
+  "distance_error_m": {
+    "clean_lap": 8.881784197001252e-15,
+    "near_miss": 8.881784197001252e-15,
+    "side_by_side": 1.0658141036401503e-14,
+    "sustained_vs_blip": 8.881784197001252e-15,
+    "violation_0.05m": 1.0658141036401503e-14,
+    "violation_0.15m": 1.0658141036401503e-14,
+    "violation_0.30m": 1.0658141036401503e-14,
+    "violation_0.60m": 1.0658141036401503e-14,
+    "race_pace": 1.0658141036401503e-14
+  },
+  "scenarios": {
+    "clean_lap": {
+      "car_1": {
+        "events": [],
+        "peak_target_error_m": 1.7763568394002505e-15,
+        "violation_frames": 0,
+        "peak_margin_m": -5.999999999999998
+      }
+    },
+    "near_miss": {
+      "car_1": {
+        "events": [],
+        "peak_target_error_m": 4.773959005888173e-15,
+        "violation_frames": 0,
+        "peak_margin_m": -0.3499999999999952
+      }
+    },
+    "side_by_side": {
+      "car_1": {
+        "events": [
+          {
+            "start_frame": 34,
+            "end_frame_inclusive": 66,
+            "start_time_s": 1.4166666666666667,
+            "end_time_exclusive_s": 2.7916666666666665,
+            "frame_count": 33,
+            "peak_margin_m": 0.29999999999999893
+          }
+        ],
+        "peak_target_error_m": 1.0547118733938987e-15,
+        "violation_frames": 33,
+        "peak_margin_m": 0.29999999999999893
+      },
+      "car_2": {
+        "events": [],
+        "peak_target_error_m": 4.440892098500626e-16,
+        "violation_frames": 0,
+        "peak_margin_m": -2.4000000000000004
+      }
+    },
+    "sustained_vs_blip": {
+      "car_1": {
+        "events": [
+          {
+            "start_frame": 47,
+            "end_frame_inclusive": 48,
+            "start_time_s": 1.9583333333333333,
+            "end_time_exclusive_s": 2.0416666666666665,
+            "frame_count": 2,
+            "peak_margin_m": 0.30000000000000426
+          }
+        ],
+        "peak_target_error_m": 4.274358644806853e-15,
+        "violation_frames": 2,
+        "peak_margin_m": 0.30000000000000426
+      },
+      "car_2": {
+        "events": [
+          {
+            "start_frame": 36,
+            "end_frame_inclusive": 63,
+            "start_time_s": 1.5,
+            "end_time_exclusive_s": 2.6666666666666665,
+            "frame_count": 28,
+            "peak_margin_m": 0.29999999999999716
+          }
+        ],
+        "peak_target_error_m": 2.831068712794149e-15,
+        "violation_frames": 28,
+        "peak_margin_m": 0.29999999999999716
+      }
+    },
+    "violation_0.05m": {
+      "car_1": {
+        "events": [
+          {
+            "start_frame": 36,
+            "end_frame_inclusive": 64,
+            "start_time_s": 1.5,
+            "end_time_exclusive_s": 2.7083333333333335,
+            "frame_count": 29,
+            "peak_margin_m": 0.0500000000000016
+          }
+        ],
+        "peak_target_error_m": 1.5959455978986625e-15,
+        "violation_frames": 29,
+        "peak_margin_m": 0.0500000000000016
+      }
+    },
+    "violation_0.15m": {
+      "car_1": {
+        "events": [
+          {
+            "start_frame": 35,
+            "end_frame_inclusive": 65,
+            "start_time_s": 1.4583333333333333,
+            "end_time_exclusive_s": 2.75,
+            "frame_count": 31,
+            "peak_margin_m": 0.15000000000000124
+          }
+        ],
+        "peak_target_error_m": 1.2490009027033011e-15,
+        "violation_frames": 31,
+        "peak_margin_m": 0.15000000000000124
+      }
+    },
+    "violation_0.30m": {
+      "car_1": {
+        "events": [
+          {
+            "start_frame": 34,
+            "end_frame_inclusive": 66,
+            "start_time_s": 1.4166666666666667,
+            "end_time_exclusive_s": 2.7916666666666665,
+            "frame_count": 33,
+            "peak_margin_m": 0.29999999999999893
+          }
+        ],
+        "peak_target_error_m": 1.0547118733938987e-15,
+        "violation_frames": 33,
+        "peak_margin_m": 0.29999999999999893
+      }
+    },
+    "violation_0.60m": {
+      "car_1": {
+        "events": [
+          {
+            "start_frame": 33,
+            "end_frame_inclusive": 67,
+            "start_time_s": 1.375,
+            "end_time_exclusive_s": 2.8333333333333335,
+            "frame_count": 35,
+            "peak_margin_m": 0.6000000000000005
+          }
+        ],
+        "peak_target_error_m": 5.551115123125783e-16,
+        "violation_frames": 35,
+        "peak_margin_m": 0.6000000000000005
+      }
+    }
+  },
+  "race_pace": {
+    "speed_range_kmh": [
+      96.59886569372418,
+      133.1821145300558
+    ],
+    "peak_lateral_g": 2.6099880452344464,
+    "peak_margin_m": 0.14999999999999591,
+    "events": [
+      {
+        "start_frame": 122,
+        "end_frame_inclusive": 136,
+        "start_time_s": 2.033333333333333,
+        "end_time_exclusive_s": 2.283333333333333,
+        "frame_count": 15,
+        "peak_margin_m": 0.14999999999999591
+      }
+    ],
+    "opengl_projection_error_px": 9.094947017729282e-13
+  },
+  "cameras": {
+    "trackside": {
+      "opengl_vs_pinhole_error_px": 8.294591680169106e-10,
+      "homography_vs_pinhole_error_px": 8.003553375601768e-10,
+      "coverage_percent": 58.13425,
+      "float32_in_frame_error_px": 0.0002543782907196146
+    },
+    "exit": {
+      "opengl_vs_pinhole_error_px": 2.2737367544323206e-12,
+      "homography_vs_pinhole_error_px": 5.4569682106375694e-12,
+      "coverage_percent": 87.08931249999999,
+      "float32_in_frame_error_px": 0.0006491144463325327
+    },
+    "broadcast": {
+      "opengl_vs_pinhole_error_px": 4.547473508864641e-13,
+      "homography_vs_pinhole_error_px": 4.547473508864641e-13,
+      "coverage_percent": 100.0,
+      "float32_in_frame_error_px": 0.00022068169414524164
+    }
+  },
+  "exported_car": {
+    "triangles": 44734,
+    "bounds_min_m": [
+      -2.7300000190734863,
+      -1.024999976158142,
+      -1.4305114426349519e-08
+    ],
+    "bounds_max_m": [
+      2.7200000286102295,
+      1.024999976158142,
+      1.190000057220459
+    ]
+  }
+}

@@ -1,0 +1,103 @@
+{
+ "weights": "yolov8m-seg.pt",
+ "camera": "trackside",
+ "confidence_threshold": 0.02,
+ "frame_stride": 4,
+ "vehicle_class_recall": 0.7577319587628866,
+ "matched": 147,
+ "cars": 194,
+ "per_clip": [
+  {
+   "clip": "clean_lap/trackside",
+   "matched": 16,
+   "cars": 19
+  },
+  {
+   "clip": "near_miss/trackside",
+   "matched": 15,
+   "cars": 19
+  },
+  {
+   "clip": "violation_0.05m/trackside",
+   "matched": 13,
+   "cars": 19
+  },
+  {
+   "clip": "violation_0.15m/trackside",
+   "matched": 14,
+   "cars": 19
+  },
+  {
+   "clip": "violation_0.30m/trackside",
+   "matched": 14,
+   "cars": 19
+  },
+  {
+   "clip": "violation_0.60m/trackside",
+   "matched": 15,
+   "cars": 19
+  },
+  {
+   "clip": "side_by_side/trackside",
+   "matched": 28,
+   "cars": 38
+  },
+  {
+   "clip": "sustained_vs_blip/trackside",
+   "matched": 32,
+   "cars": 42
+  }
+ ],
+ "top_predicted_labels": [
+  [
+   "bench",
+   280
+  ],
+  [
+   "person",
+   205
+  ],
+  [
+   "truck",
+   198
+  ],
+  [
+   "suitcase",
+   174
+  ],
+  [
+   "surfboard",
+   156
+  ],
+  [
+   "chair",
+   104
+  ],
+  [
+   "stop sign",
+   61
+  ],
+  [
+   "airplane",
+   29
+  ],
+  [
+   "train",
+   23
+  ],
+  [
+   "sports ball",
+   19
+  ],
+  [
+   "traffic light",
+   18
+  ],
+  [
+   "clock",
+   8
+  ]
+ ],
+ "total_detections": 1305,
+ "note": "COCO classes, no fine-tuning, and a 2% confidence floor -- at any usable threshold the recall collapses. Even here the same car is labelled a bench, a suitcase or a surfboard as readily as a vehicle, and a vehicle-class box carries no ground contact point, so it cannot produce a track-limit margin at all."
+}

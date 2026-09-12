@@ -1,0 +1,22 @@
+{
+  "development_seed": 2026091101,
+  "development_scenes": 96,
+  "blind_seed": 2026091102,
+  "blind_scenes": 40,
+  "fps": 12,
+  "seconds": 2,
+  "width": 480,
+  "height": 270,
+  "stages": 3,
+  "iterations_per_stage": 200,
+  "batch": 8,
+  "crop": 256,
+  "learning_rates": [
+    0.0005,
+    0.0002,
+    8e-05
+  ],
+  "detector_threshold": 0.25,
+  "selection": "maximum validation event F1, then minimum margin P95; no test selection",
+  "limitations": "Synthetic same-track/assets, exact camera calibration; not real F1 accuracy"
+}

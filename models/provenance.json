@@ -1,0 +1,11 @@
+{
+  "source_repository": "arnavmandre/vmax",
+  "source_commit": "dee38ef9d3c492c4e478c1cd6a3ebb1c22661236",
+  "experiment_commit": "38f42c6f82a277802515818a90d4c4aed66a1068",
+  "run_id": 34606745423,
+  "selected_weights_sha256": "e4d99f36dcb51a78b30f07af6fcc7aaab88c54ea7501075ea1b11bfb736677e0",
+  "selected_candidate": 2,
+  "default_weights": "pipeline_out/vmaxnet.pt",
+  "baseline_weights": "models/original_baseline.pt",
+  "warning": "Experimental synthetic model; 73.3% precision, 64.7% recall; not validated on real F1 footage"
+}

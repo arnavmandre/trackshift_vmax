@@ -1,0 +1,242 @@
+{
+  "trackside": {
+    "cost": 19.796972768336065,
+    "position_m": [
+      19.120016729243176,
+      -6.59431541730566,
+      3.4837358094406463
+    ],
+    "look_at_m": [
+      40.904886009243015,
+      16.342391077638766,
+      0.0
+    ],
+    "vertical_fov_deg": 34.88132040094863,
+    "border_pixels": {
+      "asphalt|line": 2198,
+      "kerb_red|apron": 446,
+      "apron|gravel": 8622
+    },
+    "resolution": [
+      1280,
+      720
+    ],
+    "offset_residual_rms_m": 0.1294920253776784,
+    "paint_agreement": 0.6292200468102798,
+    "method": "surface-border chamfer against the circuit map; video only",
+    "seed": 7,
+    "seconds": 107.1,
+    "homography": [
+      [
+        -159.5356005920169,
+        41.222269731673336,
+        3291.4720183507025
+      ],
+      [
+        -20.120827802784213,
+        -21.184681708027327,
+        -271.1132144232827
+      ],
+      [
+        -0.08605899860378781,
+        -0.09060921903424557,
+        1.0
+      ]
+    ],
+    "source_clip": "clean_lap/trackside.mp4",
+    "ground_frame_error": {
+      "samples": 3077,
+      "mean_ground_error_m": 2.1220712747621477,
+      "median_ground_error_m": 1.923423503609846,
+      "p95_ground_error_m": 3.778728989553732,
+      "max_ground_error_m": 4.44696944338592,
+      "mean_reprojection_error_px": 15.277345177704232,
+      "max_reprojection_error_px": 143.86740972017137
+    },
+    "track_frame_error": {
+      "samples": 3077,
+      "mean_abs_lateral_error_m": 0.24567174795219301,
+      "p95_abs_lateral_error_m": 0.6579419287192302,
+      "max_abs_lateral_error_m": 0.8458054316269994,
+      "along_track_gauge_m": 1.8809185746381019,
+      "mean_abs_along_track_error_m": 0.6388701989072175,
+      "p95_abs_along_track_error_m": 1.6549960168867697
+    },
+    "truth": {
+      "position_m": [
+        18.0,
+        -7.0,
+        3.5
+      ],
+      "look_at_m": [
+        40.0,
+        15.0,
+        0.0
+      ],
+      "vertical_fov_deg": 35
+    },
+    "position_error_m": 1.1913362154803373,
+    "paint_agreement_at_truth": 0.6175078909667584,
+    "failure_mode": null
+  },
+  "exit": {
+    "cost": 19.15756458089883,
+    "position_m": [
+      49.25857301034924,
+      9.889134812579933,
+      3.8635157101814883
+    ],
+    "look_at_m": [
+      19.11209859026771,
+      -3.196551192421846,
+      0.0
+    ],
+    "vertical_fov_deg": 42.704290043880135,
+    "border_pixels": {
+      "asphalt|line": 2699,
+      "kerb_red|apron": 1046,
+      "apron|gravel": 11669
+    },
+    "resolution": [
+      1280,
+      720
+    ],
+    "offset_residual_rms_m": 0.1116833801286404,
+    "paint_agreement": 0.6245648817084287,
+    "method": "surface-border chamfer against the circuit map; video only",
+    "seed": 0,
+    "seconds": 95.8,
+    "homography": [
+      [
+        -19.288596228818236,
+        12.01584243831463,
+        837.165750452089
+      ],
+      [
+        -4.657884593448735,
+        -2.021848869889863,
+        324.496411135145
+      ],
+      [
+        -0.01850265673320135,
+        -0.008031451800802319,
+        1.0
+      ]
+    ],
+    "source_clip": "clean_lap/exit.mp4",
+    "ground_frame_error": {
+      "samples": 4372,
+      "mean_ground_error_m": 24.23158627651335,
+      "median_ground_error_m": 23.74184881416071,
+      "p95_ground_error_m": 32.886776872731154,
+      "max_ground_error_m": 38.36200816208551,
+      "mean_reprojection_error_px": 5031.634799089881,
+      "max_reprojection_error_px": 5895395.647386993
+    },
+    "track_frame_error": {
+      "samples": 4372,
+      "mean_abs_lateral_error_m": 5.0186457012974115,
+      "p95_abs_lateral_error_m": 18.79702003920947,
+      "max_abs_lateral_error_m": 21.310944701704003,
+      "along_track_gauge_m": -20.955243212293453,
+      "mean_abs_along_track_error_m": 3.7900326130384716,
+      "p95_abs_along_track_error_m": 16.755243212293443
+    },
+    "truth": {
+      "position_m": [
+        58.0,
+        38.0,
+        4.0
+      ],
+      "look_at_m": [
+        38.0,
+        12.0,
+        0.0
+      ],
+      "vertical_fov_deg": 42
+    },
+    "position_error_m": 29.438952348242076,
+    "paint_agreement_at_truth": 0.5967046477965654,
+    "failure_mode": "objective"
+  },
+  "broadcast": {
+    "cost": 22.550545423716358,
+    "position_m": [
+      60.2525433802598,
+      -18.880734071676628,
+      15.197447121346283
+    ],
+    "look_at_m": [
+      26.743969772235392,
+      18.031855639317236,
+      0.0
+    ],
+    "vertical_fov_deg": 48.507468533389584,
+    "border_pixels": {
+      "asphalt|line": 1743,
+      "kerb_red|apron": 184,
+      "apron|gravel": 14100
+    },
+    "resolution": [
+      1280,
+      720
+    ],
+    "offset_residual_rms_m": 17.800488544674103,
+    "paint_agreement": 0.572672668346627,
+    "method": "surface-border chamfer against the circuit map; video only",
+    "seed": 7,
+    "seconds": 102.8,
+    "homography": [
+      [
+        3.186026959431619,
+        17.51511887613188,
+        188.89229014160517
+      ],
+      [
+        -1.3238117622235375,
+        1.4582930626997284,
+        340.94353584552647
+      ],
+      [
+        -0.011370880180162898,
+        0.012526007213948111,
+        1.0
+      ]
+    ],
+    "source_clip": "clean_lap/broadcast.mp4",
+    "ground_frame_error": {
+      "samples": 6231,
+      "mean_ground_error_m": 0.41419699630534434,
+      "median_ground_error_m": 0.3737402794462007,
+      "p95_ground_error_m": 0.8329246350106397,
+      "max_ground_error_m": 0.9058214798059492,
+      "mean_reprojection_error_px": 2.291124065476434,
+      "max_reprojection_error_px": 7.485379476803385
+    },
+    "track_frame_error": {
+      "samples": 6231,
+      "mean_abs_lateral_error_m": 0.12051602232203909,
+      "p95_abs_lateral_error_m": 0.2761344076212513,
+      "max_abs_lateral_error_m": 0.4181902427495121,
+      "along_track_gauge_m": -0.20128052682907338,
+      "mean_abs_along_track_error_m": 0.35074658326604646,
+      "p95_abs_along_track_error_m": 0.620821412581261
+    },
+    "truth": {
+      "position_m": [
+        60.0,
+        -18.0,
+        15.0
+      ],
+      "look_at_m": [
+        27.0,
+        18.0,
+        0.0
+      ],
+      "vertical_fov_deg": 49
+    },
+    "position_error_m": 0.9372598517236677,
+    "paint_agreement_at_truth": 0.571663264957178,
+    "failure_mode": null
+  }
+}

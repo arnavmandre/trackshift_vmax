@@ -1,0 +1,284 @@
+[
+  {
+    "id": "8f3d832f373bea26",
+    "family_id": "8f3d832f373bea26b38f1f15c5f060d013ad586b159207de2cf71cda5fb0d28a",
+    "split": "train",
+    "seed": 2403173167,
+    "fps": 12,
+    "frames": 24,
+    "width": 320,
+    "height": 180,
+    "speed_mps": 20.093591116446653,
+    "start_s": 14.674430331917396,
+    "offset_base_m": 4.3579991330231405,
+    "offset_peak_m": 6.924486034901072,
+    "excursion_centre": 0.6528865749445777,
+    "excursion_width": 0.061088223375256746,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      57.73685993940754,
+      -12.45285390106908,
+      10.334240031333739
+    ],
+    "camera_target": [
+      34.50631673152619,
+      9.581023922169969,
+      0.0
+    ],
+    "fov": 61.62252613206222,
+    "colours": [
+      [
+        94,
+        194,
+        31
+      ],
+      [
+        178,
+        194,
+        175
+      ]
+    ],
+    "brightness": 0.7028264139000393,
+    "blur_px": 0.8,
+    "noise_sigma": 0.38835593699955717,
+    "crf": 22,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "9388d9d0f5255d3b",
+    "family_id": "9388d9d0f5255d3bea398e714fc736542a869e4bd51bbd01866c5a1fffe53935",
+    "split": "train",
+    "seed": 2475219408,
+    "fps": 12,
+    "frames": 24,
+    "width": 320,
+    "height": 180,
+    "speed_mps": 17.738616033496342,
+    "start_s": 8.278745178320687,
+    "offset_base_m": 4.0748531153142915,
+    "offset_peak_m": 7.905757716857652,
+    "excursion_centre": 0.4741385000489087,
+    "excursion_width": 0.15838356654625674,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      59.78952100014744,
+      -17.46983884291032,
+      21.489892590403393
+    ],
+    "camera_target": [
+      27.17332138950139,
+      2.88382287111365,
+      0.0
+    ],
+    "fov": 47.38737832019102,
+    "colours": [
+      [
+        228,
+        190,
+        165
+      ],
+      [
+        172,
+        158,
+        30
+      ]
+    ],
+    "brightness": 0.9576110102774104,
+    "blur_px": 0.0,
+    "noise_sigma": 2.1852533032475643,
+    "crf": 21,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "fb1187e0b394cebc",
+    "family_id": "fb1187e0b394cebc94be26c19859772f75690dc218d08a8f3f7002e99a1bf6b5",
+    "split": "test",
+    "seed": 4212230112,
+    "fps": 12,
+    "frames": 24,
+    "width": 320,
+    "height": 180,
+    "speed_mps": 12.568935104804105,
+    "start_s": 12.034956627649848,
+    "offset_base_m": 6.100636136490449,
+    "offset_peak_m": 9.09345489269178,
+    "excursion_centre": 0.48915875886137794,
+    "excursion_width": 0.23678658926676088,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      56.234195538893076,
+      -14.876422805693622,
+      17.780395103096794
+    ],
+    "camera_target": [
+      26.04960904984124,
+      2.0867059153332166,
+      0.0
+    ],
+    "fov": 61.08703589021502,
+    "colours": [
+      [
+        166,
+        183,
+        184
+      ],
+      [
+        171,
+        80,
+        125
+      ]
+    ],
+    "brightness": 1.0185314781863588,
+    "blur_px": 0.0,
+    "noise_sigma": 2.7874134514625295,
+    "crf": 29,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "5074f385ddaa6add",
+    "family_id": "5074f385ddaa6addb5f7c043566dda9af3d309b91d899b23f76084219f027562",
+    "split": "train",
+    "seed": 1349841797,
+    "fps": 12,
+    "frames": 24,
+    "width": 320,
+    "height": 180,
+    "speed_mps": 14.577583176066982,
+    "start_s": 17.832423390090486,
+    "offset_base_m": 4.1217064877713145,
+    "offset_peak_m": 7.737506351898036,
+    "excursion_centre": 0.38583372810599603,
+    "excursion_width": 0.13717968820551943,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      52.16979835721143,
+      -13.880636406970162,
+      18.89353961959104
+    ],
+    "camera_target": [
+      32.83982546114201,
+      7.789041248641346,
+      0.0
+    ],
+    "fov": 64.91734051666128,
+    "colours": [
+      [
+        186,
+        94,
+        154
+      ],
+      [
+        205,
+        64,
+        123
+      ]
+    ],
+    "brightness": 0.8437956829298716,
+    "blur_px": 0.8,
+    "noise_sigma": 0.9760425342004718,
+    "crf": 23,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "8c4105874cc061f8",
+    "family_id": "8c4105874cc061f857c2dc8df95a40fea33a0ed77955b8e77d6ca9c2b0cb4ec1",
+    "split": "test",
+    "seed": 2353071495,
+    "fps": 12,
+    "frames": 24,
+    "width": 320,
+    "height": 180,
+    "speed_mps": 12.977785733024263,
+    "start_s": 8.672818770327314,
+    "offset_base_m": 5.578431017427318,
+    "offset_peak_m": 7.840653928827587,
+    "excursion_centre": 0.5643898871809085,
+    "excursion_width": 0.21730314766641307,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      69.02893733608391,
+      -20.536084562630975,
+      12.058195868867498
+    ],
+    "camera_target": [
+      23.165038690062744,
+      0.25857347190596514,
+      0.0
+    ],
+    "fov": 43.31490897010358,
+    "colours": [
+      [
+        214,
+        94,
+        114
+      ],
+      [
+        111,
+        187,
+        109
+      ]
+    ],
+    "brightness": 0.9050478915336602,
+    "blur_px": 0.8,
+    "noise_sigma": 1.7782870976988931,
+    "crf": 29,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "abf4a5aea99a673e",
+    "family_id": "abf4a5aea99a673ee590eb2167ad5f18295679872330c07f3c1513d90efff0e6",
+    "split": "validation",
+    "seed": 2884937134,
+    "fps": 12,
+    "frames": 24,
+    "width": 320,
+    "height": 180,
+    "speed_mps": 10.323259891208124,
+    "start_s": 11.747614390472672,
+    "offset_base_m": 3.561690517737369,
+    "offset_peak_m": 8.523763337494595,
+    "excursion_centre": 0.6029087742897525,
+    "excursion_width": 0.092558063549932,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      66.53806096321466,
+      -23.195068746766914,
+      19.09702211159584
+    ],
+    "camera_target": [
+      23.69042632673053,
+      0.5695079861060712,
+      0.0
+    ],
+    "fov": 54.34717828017646,
+    "colours": [
+      [
+        28,
+        75,
+        51
+      ],
+      [
+        41,
+        147,
+        216
+      ]
+    ],
+    "brightness": 0.7204070261328402,
+    "blur_px": 0.0,
+    "noise_sigma": 2.869497070509563,
+    "crf": 26,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  }
+]

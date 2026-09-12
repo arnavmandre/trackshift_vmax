@@ -1,0 +1,1882 @@
+[
+  {
+    "id": "2d66baf262858c4a",
+    "family_id": "2d66baf262858c4a003496077f759af98c670391ac7b7e174caa98aaa16125cf",
+    "split": "train",
+    "seed": 761707250,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 11.614672374105925,
+    "start_s": 9.272205036998258,
+    "offset_base_m": 3.7282242585219025,
+    "offset_peak_m": 8.454324396588648,
+    "excursion_centre": 0.3493119654463082,
+    "excursion_width": 0.08148666025751838,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      67.87360153098682,
+      -27.02391114460677,
+      15.949757867100043
+    ],
+    "camera_target": [
+      22.45909674769935,
+      -0.144600798581628,
+      0.0
+    ],
+    "fov": 50.301288849308236,
+    "colours": [
+      [
+        38,
+        69,
+        161
+      ],
+      [
+        46,
+        115,
+        175
+      ]
+    ],
+    "brightness": 1.0763515360891671,
+    "blur_px": 0.4,
+    "noise_sigma": 1.6597811196108312,
+    "crf": 24,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "f6fad7b0f0f43837",
+    "family_id": "f6fad7b0f0f43837618e26df499e70d8f81e7e63f35e50cc5c6fbc9c56bce4e5",
+    "split": "train",
+    "seed": 4143634352,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 16.412292532003963,
+    "start_s": 12.170104925368344,
+    "offset_base_m": 5.858348577642547,
+    "offset_peak_m": 8.843697014911937,
+    "excursion_centre": 0.47642873991589807,
+    "excursion_width": 0.19044336325198274,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      65.5464672931406,
+      -19.981739375864773,
+      19.101481733816485
+    ],
+    "camera_target": [
+      29.544687877196182,
+      4.7422147853973,
+      0.0
+    ],
+    "fov": 51.26894585134478,
+    "colours": [
+      [
+        97,
+        131,
+        40
+      ],
+      [
+        183,
+        194,
+        208
+      ]
+    ],
+    "brightness": 1.1314515720105582,
+    "blur_px": 0.8,
+    "noise_sigma": 0.8705721622023836,
+    "crf": 24,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "31c20cc1705a7461",
+    "family_id": "31c20cc1705a746197f5cf480a9f3b45743618aa68a1bdd63abb89d01782b270",
+    "split": "train",
+    "seed": 834800833,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 20.84384439026677,
+    "start_s": 16.829296163790175,
+    "offset_base_m": 3.0944386353559596,
+    "offset_peak_m": 7.219926786449502,
+    "excursion_centre": 0.6424431310736769,
+    "excursion_width": 0.22656865525714465,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      68.47317723327335,
+      -18.197475398372276,
+      20.189222020434443
+    ],
+    "camera_target": [
+      36.600911834229095,
+      12.136524751872958,
+      0.0
+    ],
+    "fov": 49.392552877343356,
+    "colours": [
+      [
+        84,
+        161,
+        163
+      ],
+      [
+        205,
+        88,
+        193
+      ]
+    ],
+    "brightness": 1.0948796709047657,
+    "blur_px": 0.8,
+    "noise_sigma": 0.0418261813240145,
+    "crf": 18,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "f49f580df56203e1",
+    "family_id": "f49f580df56203e109c10c56c667d76a1d8353782cbe7644b39589f11ff8c2f7",
+    "split": "train",
+    "seed": 4104083469,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 14.568205691699163,
+    "start_s": 14.973763498494788,
+    "offset_base_m": 3.269897069196129,
+    "offset_peak_m": 8.380790811269465,
+    "excursion_centre": 0.6582533063634308,
+    "excursion_width": 0.2023040726205535,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      65.02555635086301,
+      -26.56766416003611,
+      11.97291780205303
+    ],
+    "camera_target": [
+      30.448205833920934,
+      5.5194727201688085,
+      0.0
+    ],
+    "fov": 56.719218570206365,
+    "colours": [
+      [
+        64,
+        128,
+        87
+      ],
+      [
+        61,
+        128,
+        136
+      ]
+    ],
+    "brightness": 1.0043872817941406,
+    "blur_px": 0.0,
+    "noise_sigma": 2.743768377952173,
+    "crf": 24,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "1033f9c11e8d6c4b",
+    "family_id": "1033f9c11e8d6c4b7f18f8ed8f363d39707049b2db217f659bfc6001a38a68c6",
+    "split": "test",
+    "seed": 271841729,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 17.766653257328024,
+    "start_s": 8.09121845868181,
+    "offset_base_m": 4.654274688950659,
+    "offset_peak_m": 7.736115285508513,
+    "excursion_centre": 0.6473729323962598,
+    "excursion_width": 0.07539829520396338,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      66.58034916572444,
+      -23.38933848005842,
+      10.31398066668012
+    ],
+    "camera_target": [
+      27.024027609379687,
+      2.7749824477209373,
+      0.0
+    ],
+    "fov": 42.92090233363203,
+    "colours": [
+      [
+        175,
+        176,
+        59
+      ],
+      [
+        142,
+        83,
+        135
+      ]
+    ],
+    "brightness": 0.8029467947137245,
+    "blur_px": 0.0,
+    "noise_sigma": 2.1215527034088715,
+    "crf": 25,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "c2b1bd79b7d86a5b",
+    "family_id": "c2b1bd79b7d86a5b07581ded50a58ccc3c74c663895ace22a027e4a890107e41",
+    "split": "train",
+    "seed": 3266428281,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 9.015341500112607,
+    "start_s": 13.35599366230171,
+    "offset_base_m": 4.761720164351984,
+    "offset_peak_m": 9.058456382150233,
+    "excursion_centre": 0.4924206935314478,
+    "excursion_width": 0.20150054493296027,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      60.98306894772644,
+      -24.935717408707532,
+      13.187944334038788
+    ],
+    "camera_target": [
+      24.03939267080536,
+      0.7812850794569055,
+      0.0
+    ],
+    "fov": 48.77994106282349,
+    "colours": [
+      [
+        162,
+        107,
+        32
+      ],
+      [
+        233,
+        90,
+        77
+      ]
+    ],
+    "brightness": 0.9176815504947722,
+    "blur_px": 0.8,
+    "noise_sigma": 1.4928061658211322,
+    "crf": 26,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "420c2994d4fa0cf6",
+    "family_id": "420c2994d4fa0cf67f41a3b2d1902ff5dba3a66e4fa5dc51cad99d8f3a4841cf",
+    "split": "train",
+    "seed": 1108093332,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 15.444566456566815,
+    "start_s": 13.870566395317521,
+    "offset_base_m": 5.7330981452016,
+    "offset_peak_m": 8.62733203657928,
+    "excursion_centre": 0.6785577484071963,
+    "excursion_width": 0.2016315208669489,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      60.64885850689044,
+      -16.93124902566568,
+      11.829923978899988
+    ],
+    "camera_target": [
+      30.220535216491204,
+      5.31975704772507,
+      0.0
+    ],
+    "fov": 54.90444696976532,
+    "colours": [
+      [
+        81,
+        167,
+        60
+      ],
+      [
+        187,
+        150,
+        181
+      ]
+    ],
+    "brightness": 0.8455022936467934,
+    "blur_px": 0.0,
+    "noise_sigma": 0.6331184759316145,
+    "crf": 22,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "6ebc447e7909037d",
+    "family_id": "6ebc447e7909037ddf4ff06382fee8562940ba68e3f241be3dfae9d3b5876c0a",
+    "split": "train",
+    "seed": 1857832062,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 11.383583822410955,
+    "start_s": 11.69752666843496,
+    "offset_base_m": 4.86607676819937,
+    "offset_peak_m": 6.934548978114991,
+    "excursion_centre": 0.586166651577879,
+    "excursion_width": 0.11982461225783202,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      67.1595541423544,
+      -22.22264392121872,
+      20.50696122875764
+    ],
+    "camera_target": [
+      24.63572652029573,
+      1.1531085050914562,
+      0.0
+    ],
+    "fov": 60.513762407208176,
+    "colours": [
+      [
+        44,
+        147,
+        194
+      ],
+      [
+        68,
+        35,
+        119
+      ]
+    ],
+    "brightness": 1.1129646838059042,
+    "blur_px": 0.0,
+    "noise_sigma": 0.5149608582358793,
+    "crf": 28,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "a6130bc8ae524232",
+    "family_id": "a6130bc8ae5242320cc28d6d6297e62cb7966f6f1ceac847b92e108a602b8deb",
+    "split": "train",
+    "seed": 2786266056,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 19.595885482671044,
+    "start_s": 13.681245056212642,
+    "offset_base_m": 3.021594501756421,
+    "offset_peak_m": 7.994424107544181,
+    "excursion_centre": 0.4462154640575118,
+    "excursion_width": 0.1732217290724977,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      62.426444336146126,
+      -12.287759713805928,
+      18.364909461843666
+    ],
+    "camera_target": [
+      33.365250867061505,
+      8.333613490357767,
+      0.0
+    ],
+    "fov": 48.19700171424758,
+    "colours": [
+      [
+        109,
+        81,
+        64
+      ],
+      [
+        84,
+        51,
+        28
+      ]
+    ],
+    "brightness": 0.843729274064932,
+    "blur_px": 0.0,
+    "noise_sigma": 0.7356652239085657,
+    "crf": 22,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "e0886a4dd1e3a903",
+    "family_id": "e0886a4dd1e3a9038133cb345af08acc12c5bc8cc49eef35d7cd20aa0aeafcb0",
+    "split": "validation",
+    "seed": 3767036493,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 17.90273865648059,
+    "start_s": 8.651178871546971,
+    "offset_base_m": 4.272682745433266,
+    "offset_peak_m": 9.165332936479906,
+    "excursion_centre": 0.439349860985867,
+    "excursion_width": 0.08780093243356019,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      62.51365715128088,
+      -14.060628043463248,
+      17.15428289276204
+    ],
+    "camera_target": [
+      27.66245184873766,
+      3.2469217926406833,
+      0.0
+    ],
+    "fov": 54.85583239280598,
+    "colours": [
+      [
+        139,
+        82,
+        37
+      ],
+      [
+        95,
+        51,
+        94
+      ]
+    ],
+    "brightness": 0.7625236979740742,
+    "blur_px": 0.0,
+    "noise_sigma": 0.34061476014642855,
+    "crf": 25,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "87b5ea133eb025bf",
+    "family_id": "87b5ea133eb025bf923d9f8340cb51f322a64ad2bba229d5e9d525005ce67fad",
+    "split": "train",
+    "seed": 2276846099,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 14.64882062746712,
+    "start_s": 10.440149599241419,
+    "offset_base_m": 3.5412836948588007,
+    "offset_peak_m": 7.908751716718478,
+    "excursion_centre": 0.6010005227252018,
+    "excursion_width": 0.15864325768458615,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      68.0342233711799,
+      -19.164549441726237,
+      10.154065850210426
+    ],
+    "camera_target": [
+      26.425942768017357,
+      2.3480472110479926,
+      0.0
+    ],
+    "fov": 42.27647945819146,
+    "colours": [
+      [
+        177,
+        177,
+        173
+      ],
+      [
+        54,
+        196,
+        101
+      ]
+    ],
+    "brightness": 1.140248309472127,
+    "blur_px": 0.0,
+    "noise_sigma": 2.6201610008422596,
+    "crf": 18,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "49c612c2be9758e7",
+    "family_id": "49c612c2be9758e724d0169fdfc398d84723c5f19a69fd84d563f21b7ddee896",
+    "split": "train",
+    "seed": 1237717698,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 12.544082252412233,
+    "start_s": 17.87907893200171,
+    "offset_base_m": 5.2898092507564165,
+    "offset_peak_m": 7.158546731571588,
+    "excursion_centre": 0.4163613491603923,
+    "excursion_width": 0.21173370251067442,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      52.16420647470914,
+      -26.792300465973078,
+      17.217935869967356
+    ],
+    "camera_target": [
+      31.271555026352754,
+      6.264412762873214,
+      0.0
+    ],
+    "fov": 42.95586639278615,
+    "colours": [
+      [
+        232,
+        176,
+        195
+      ],
+      [
+        75,
+        211,
+        160
+      ]
+    ],
+    "brightness": 0.783133835453415,
+    "blur_px": 0.4,
+    "noise_sigma": 2.7185949504628826,
+    "crf": 28,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "b1e15240d60e2001",
+    "family_id": "b1e15240d60e2001c2400249cf6b2e5f7cd9e859cb70ef4815c5ab26ff4eea74",
+    "split": "train",
+    "seed": 2984333888,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 19.837072237423932,
+    "start_s": 14.412471219563914,
+    "offset_base_m": 4.0228806261533405,
+    "offset_peak_m": 7.824455020874197,
+    "excursion_centre": 0.3180001545182907,
+    "excursion_width": 0.1427013700558032,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      52.14306768646058,
+      -27.39157094061733,
+      19.78384880915904
+    ],
+    "camera_target": [
+      34.11738561036316,
+      9.145437952973873,
+      0.0
+    ],
+    "fov": 43.19402154977746,
+    "colours": [
+      [
+        127,
+        63,
+        76
+      ],
+      [
+        77,
+        56,
+        154
+      ]
+    ],
+    "brightness": 0.8318931705962492,
+    "blur_px": 0.0,
+    "noise_sigma": 2.381616974109761,
+    "crf": 21,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "878d163cc931f40e",
+    "family_id": "878d163cc931f40edcd6eef5341db8dc946aee0b1803dcb95c42aed4c5240497",
+    "split": "train",
+    "seed": 2274170428,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 17.544412476584128,
+    "start_s": 11.021379417542896,
+    "offset_base_m": 5.334461806557588,
+    "offset_peak_m": 8.8892668042641,
+    "excursion_centre": 0.43931441613474015,
+    "excursion_width": 0.1889104058762382,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      65.64770996392137,
+      -27.240711464295572,
+      20.688413588537614
+    ],
+    "camera_target": [
+      29.488434251823893,
+      4.69515266460058,
+      0.0
+    ],
+    "fov": 48.87002026658415,
+    "colours": [
+      [
+        205,
+        178,
+        68
+      ],
+      [
+        195,
+        53,
+        192
+      ]
+    ],
+    "brightness": 1.0223716957387141,
+    "blur_px": 0.0,
+    "noise_sigma": 0.5334172793544275,
+    "crf": 29,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "ce92ab196c2e1b3c",
+    "family_id": "ce92ab196c2e1b3ca958c0b792199c6108dc06038572c6d2f9a80c35b2817288",
+    "split": "train",
+    "seed": 3465718553,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 11.2963724610208,
+    "start_s": 14.216154622023927,
+    "offset_base_m": 5.251033745391878,
+    "offset_peak_m": 8.312354123415972,
+    "excursion_centre": 0.44119520386057354,
+    "excursion_width": 0.2122683508455238,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      63.34441959073166,
+      -27.205414382043177,
+      21.221311362775253
+    ],
+    "camera_target": [
+      26.953484689514084,
+      2.72387274552076,
+      0.0
+    ],
+    "fov": 46.078230827157135,
+    "colours": [
+      [
+        173,
+        90,
+        104
+      ],
+      [
+        218,
+        150,
+        163
+      ]
+    ],
+    "brightness": 0.814276096799255,
+    "blur_px": 0.0,
+    "noise_sigma": 0.8391365170577478,
+    "crf": 26,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "276e102e4a8e9c05",
+    "family_id": "276e102e4a8e9c05ad6463ad2dfab9691374b7d41cce2056be466c371544d456",
+    "split": "train",
+    "seed": 661524526,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 18.449957157964366,
+    "start_s": 8.46821766460356,
+    "offset_base_m": 3.2579861009154163,
+    "offset_peak_m": 7.807401000824681,
+    "excursion_centre": 0.30648590977246387,
+    "excursion_width": 0.2145359636357091,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      52.79205677175478,
+      -21.95160722524134,
+      14.49283005613593
+    ],
+    "camera_target": [
+      27.975179616183876,
+      3.484396137510605,
+      0.0
+    ],
+    "fov": 49.55477139241226,
+    "colours": [
+      [
+        48,
+        68,
+        131
+      ],
+      [
+        91,
+        26,
+        117
+      ]
+    ],
+    "brightness": 1.1130923341606043,
+    "blur_px": 0.8,
+    "noise_sigma": 0.018613465636792892,
+    "crf": 26,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "c16ceb5334e9feff",
+    "family_id": "c16ceb5334e9feffcfdc978bbae5d5c9fb390250b42ee65005729bbdf960d029",
+    "split": "train",
+    "seed": 3245140819,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 8.117273519520435,
+    "start_s": 11.354455538878305,
+    "offset_base_m": 4.70641467713715,
+    "offset_peak_m": 8.323752346384888,
+    "excursion_centre": 0.6498489377087445,
+    "excursion_width": 0.21621773758788315,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      69.20594600676823,
+      -19.16318525809195,
+      10.94198820886062
+    ],
+    "camera_target": [
+      21.173989337833746,
+      -0.8370196699184058,
+      0.0
+    ],
+    "fov": 53.794928498225744,
+    "colours": [
+      [
+        139,
+        46,
+        58
+      ],
+      [
+        211,
+        33,
+        95
+      ]
+    ],
+    "brightness": 1.0128100310625556,
+    "blur_px": 0.8,
+    "noise_sigma": 0.305204687268551,
+    "crf": 22,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "04b09f2807fdeca7",
+    "family_id": "04b09f2807fdeca7d0c6e23a4abdf6e6fdb227066c878bca8b661f97f15907eb",
+    "split": "test",
+    "seed": 78683944,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 12.61621143603407,
+    "start_s": 14.217700166978979,
+    "offset_base_m": 5.373489789048599,
+    "offset_peak_m": 7.878330217270734,
+    "excursion_centre": 0.5093956601321253,
+    "excursion_width": 0.12337548319244834,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      58.13261251169118,
+      -13.298185364047244,
+      16.71328260972612
+    ],
+    "camera_target": [
+      28.119934389175352,
+      3.5957517596026465,
+      0.0
+    ],
+    "fov": 51.9274494051447,
+    "colours": [
+      [
+        66,
+        81,
+        59
+      ],
+      [
+        43,
+        229,
+        231
+      ]
+    ],
+    "brightness": 0.779803869447895,
+    "blur_px": 0.8,
+    "noise_sigma": 1.1054357437968911,
+    "crf": 24,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "e0a0cdd7a83a4060",
+    "family_id": "e0a0cdd7a83a4060b42f3b1237a02f05356d0e3148405dc1840cb80e4cdb7c2e",
+    "split": "test",
+    "seed": 3768634839,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 15.372856981536975,
+    "start_s": 15.866112402136304,
+    "offset_base_m": 4.5278388244914005,
+    "offset_peak_m": 7.500154007338886,
+    "excursion_centre": 0.6365182449634759,
+    "excursion_width": 0.09897673850351106,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      62.257445079712156,
+      -22.882423886903275,
+      17.90513855751117
+    ],
+    "camera_target": [
+      31.855402503308994,
+      6.815164135524571,
+      0.0
+    ],
+    "fov": 43.740045514892884,
+    "colours": [
+      [
+        154,
+        117,
+        28
+      ],
+      [
+        93,
+        117,
+        156
+      ]
+    ],
+    "brightness": 0.8672686369673657,
+    "blur_px": 0.0,
+    "noise_sigma": 0.9050250997359296,
+    "crf": 25,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "2404e61f7371e134",
+    "family_id": "2404e61f7371e134bb9ccbedd36994f3cca37fb907554b71010f30be63d79874",
+    "split": "train",
+    "seed": 604300831,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 8.524623683951607,
+    "start_s": 9.643723353696066,
+    "offset_base_m": 5.4909246353203,
+    "offset_peak_m": 7.334681565482737,
+    "excursion_centre": 0.30055779681921796,
+    "excursion_width": 0.19254390518468056,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      56.38956891977097,
+      -13.883940572331325,
+      12.494754556340169
+    ],
+    "camera_target": [
+      19.814715703411487,
+      -1.5135765936034247,
+      0.0
+    ],
+    "fov": 56.29927983271246,
+    "colours": [
+      [
+        38,
+        230,
+        205
+      ],
+      [
+        153,
+        121,
+        150
+      ]
+    ],
+    "brightness": 0.969963776723703,
+    "blur_px": 0.8,
+    "noise_sigma": 1.8493883399896598,
+    "crf": 23,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "0e18cafa2ff5d208",
+    "family_id": "0e18cafa2ff5d208bfb3c85ba5d7edace2d96420c340f059df146fae3fdeb400",
+    "split": "validation",
+    "seed": 236505850,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 13.900359924446988,
+    "start_s": 15.335074090310409,
+    "offset_base_m": 4.946456318605755,
+    "offset_peak_m": 7.723536065115568,
+    "excursion_centre": 0.3275223894616864,
+    "excursion_width": 0.06310375604975596,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      68.08406150228002,
+      -15.25396004908149,
+      16.867907187060084
+    ],
+    "camera_target": [
+      30.2072184655274,
+      5.308157261743787,
+      0.0
+    ],
+    "fov": 60.27806134913181,
+    "colours": [
+      [
+        127,
+        44,
+        55
+      ],
+      [
+        129,
+        89,
+        137
+      ]
+    ],
+    "brightness": 1.0137232607545532,
+    "blur_px": 0.4,
+    "noise_sigma": 2.759948628916417,
+    "crf": 27,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "a50b51146979bded",
+    "family_id": "a50b51146979bdedd103bb20f75dc2a0afac401919ccb24d8b211bf26b70d491",
+    "split": "train",
+    "seed": 2768982292,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 9.151773819168108,
+    "start_s": 12.392809956316505,
+    "offset_base_m": 5.425873514202808,
+    "offset_peak_m": 6.812951478649968,
+    "excursion_centre": 0.41662391329825477,
+    "excursion_width": 0.194605783688858,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      54.04756076525069,
+      -15.679064001278903,
+      19.5246667585063
+    ],
+    "camera_target": [
+      23.218069297079516,
+      0.28953213425944035,
+      0.0
+    ],
+    "fov": 53.789953828644656,
+    "colours": [
+      [
+        163,
+        117,
+        27
+      ],
+      [
+        233,
+        232,
+        210
+      ]
+    ],
+    "brightness": 1.0119985940185097,
+    "blur_px": 0.8,
+    "noise_sigma": 0.47974192845262664,
+    "crf": 19,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "a8066918657d74d2",
+    "family_id": "a8066918657d74d289548275ba767624c08d677a41e0dcbd42e87083b08faadf",
+    "split": "train",
+    "seed": 2818992408,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 20.918015003584053,
+    "start_s": 12.526968906933302,
+    "offset_base_m": 3.625665024742208,
+    "offset_peak_m": 9.179521412683611,
+    "excursion_centre": 0.5270243105197279,
+    "excursion_width": 0.23593982279660553,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      59.41129344488057,
+      -12.71890750059255,
+      13.172015022337758
+    ],
+    "camera_target": [
+      33.45438938328644,
+      8.427799712540603,
+      0.0
+    ],
+    "fov": 53.4224183605128,
+    "colours": [
+      [
+        188,
+        41,
+        148
+      ],
+      [
+        46,
+        215,
+        115
+      ]
+    ],
+    "brightness": 1.1972099075729061,
+    "blur_px": 0.8,
+    "noise_sigma": 2.9147782329365817,
+    "crf": 22,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "7ef3636e4ff89ffd",
+    "family_id": "7ef3636e4ff89ffd6c7c0bc6d82a62e7dbb2b9a232791ffa579b8583ee4551aa",
+    "split": "test",
+    "seed": 2129879918,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 20.80601715070194,
+    "start_s": 17.7263767017549,
+    "offset_base_m": 4.146663699726819,
+    "offset_peak_m": 8.153667465532697,
+    "excursion_centre": 0.5877989821410392,
+    "excursion_width": 0.20576162056890784,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      55.463731790881205,
+      -13.80019588640139,
+      20.90616009968228
+    ],
+    "camera_target": [
+      37.19203265500281,
+      12.93059463177655,
+      0.0
+    ],
+    "fov": 45.06697885665585,
+    "colours": [
+      [
+        152,
+        206,
+        111
+      ],
+      [
+        71,
+        79,
+        167
+      ]
+    ],
+    "brightness": 1.1893219886086832,
+    "blur_px": 0.4,
+    "noise_sigma": 0.27833989321218067,
+    "crf": 18,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "8adc20b427592a34",
+    "family_id": "8adc20b427592a343b550a0a83f4effba8734e3fac0493d920577e3d7a7ff6b0",
+    "split": "validation",
+    "seed": 2329682100,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 20.967621395296476,
+    "start_s": 9.651447338802432,
+    "offset_base_m": 3.406227003518228,
+    "offset_peak_m": 6.836986324272798,
+    "excursion_centre": 0.6558449269598012,
+    "excursion_width": 0.12986597160141627,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      66.1374342757564,
+      -12.181450525010753,
+      16.083199915437113
+    ],
+    "camera_target": [
+      31.140533174244446,
+      6.143432046000571,
+      0.0
+    ],
+    "fov": 61.67739712215443,
+    "colours": [
+      [
+        112,
+        62,
+        170
+      ],
+      [
+        133,
+        80,
+        182
+      ]
+    ],
+    "brightness": 0.8861681510211317,
+    "blur_px": 0.4,
+    "noise_sigma": 0.5348878932951151,
+    "crf": 20,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "75f732f9eaf9e10a",
+    "family_id": "75f732f9eaf9e10a1a145ec131f4e6473b25cbe352c559dee6dfac413606e26e",
+    "split": "train",
+    "seed": 1979134713,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 11.411424751336853,
+    "start_s": 11.96741318738457,
+    "offset_base_m": 3.088006686891617,
+    "offset_peak_m": 9.19613753279797,
+    "excursion_centre": 0.40163332930633294,
+    "excursion_width": 0.18195692694392546,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      65.48030323746431,
+      -19.478193625639136,
+      13.76351637372817
+    ],
+    "camera_target": [
+      24.923064819096506,
+      1.3368283760486896,
+      0.0
+    ],
+    "fov": 49.90186271724928,
+    "colours": [
+      [
+        29,
+        168,
+        29
+      ],
+      [
+        82,
+        182,
+        197
+      ]
+    ],
+    "brightness": 0.9940840444282428,
+    "blur_px": 0.0,
+    "noise_sigma": 1.816995731433039,
+    "crf": 19,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "e99055ffc96c4ad9",
+    "family_id": "e99055ffc96c4ad92049eef0189959fd0c419af26c61836f3b795daf0e3773cf",
+    "split": "train",
+    "seed": 3918550527,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 16.465570719048475,
+    "start_s": 17.163367067894157,
+    "offset_base_m": 4.700693056511347,
+    "offset_peak_m": 7.632021962713305,
+    "excursion_centre": 0.3341404393586447,
+    "excursion_width": 0.21633407425736778,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      61.43710317149344,
+      -27.09980256797435,
+      17.936935913580896
+    ],
+    "camera_target": [
+      33.74458451094716,
+      8.73815398631193,
+      0.0
+    ],
+    "fov": 51.76982590030785,
+    "colours": [
+      [
+        151,
+        115,
+        26
+      ],
+      [
+        83,
+        210,
+        232
+      ]
+    ],
+    "brightness": 0.8147219381621054,
+    "blur_px": 0.0,
+    "noise_sigma": 2.6464616569347617,
+    "crf": 23,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "0d32ff34150246a9",
+    "family_id": "0d32ff34150246a9d3d89f284ece6087cabc5e409752138e755ad3e27777c9e6",
+    "split": "validation",
+    "seed": 221445940,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 16.95694909197003,
+    "start_s": 13.413872796483155,
+    "offset_base_m": 6.205929042576272,
+    "offset_peak_m": 8.700390276997283,
+    "excursion_centre": 0.5702357717394675,
+    "excursion_width": 0.09812474440602181,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      62.22478607370928,
+      -18.52090609410073,
+      19.32137124066185
+    ],
+    "camera_target": [
+      31.071794920786523,
+      6.0803366702942485,
+      0.0
+    ],
+    "fov": 47.25965190257163,
+    "colours": [
+      [
+        106,
+        233,
+        229
+      ],
+      [
+        224,
+        45,
+        232
+      ]
+    ],
+    "brightness": 0.7946086297310353,
+    "blur_px": 0.4,
+    "noise_sigma": 2.2328460354219484,
+    "crf": 23,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "f84f21ea9c8744f8",
+    "family_id": "f84f21ea9c8744f8939774981dce4e3abb34ae933f161aa42f43501e14facd17",
+    "split": "train",
+    "seed": 4165935594,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 17.153311582654005,
+    "start_s": 9.033571915672297,
+    "offset_base_m": 4.113611942946278,
+    "offset_peak_m": 7.807054209932179,
+    "excursion_centre": 0.3515062475549677,
+    "excursion_width": 0.2068257535441253,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      60.24043035745552,
+      -27.96911574871568,
+      18.93035195032122
+    ],
+    "camera_target": [
+      27.352931311367122,
+      3.015987931598982,
+      0.0
+    ],
+    "fov": 60.359217103437345,
+    "colours": [
+      [
+        33,
+        195,
+        54
+      ],
+      [
+        150,
+        45,
+        230
+      ]
+    ],
+    "brightness": 1.1959339676041822,
+    "blur_px": 0.0,
+    "noise_sigma": 0.8734676183893505,
+    "crf": 29,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "61f6b435a5d6638f",
+    "family_id": "61f6b435a5d6638fc50329e74564ae8c0543727c428504be0ae271b4e8ab0a18",
+    "split": "train",
+    "seed": 1643557941,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 11.05227415165066,
+    "start_s": 9.987646704318033,
+    "offset_base_m": 5.536919799591739,
+    "offset_peak_m": 9.080887962545225,
+    "excursion_centre": 0.3631713025784933,
+    "excursion_width": 0.17867823422180357,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      53.12412853357126,
+      -18.908368537062614,
+      21.613792468781636
+    ],
+    "camera_target": [
+      22.635992261057343,
+      -0.045122728708824944,
+      0.0
+    ],
+    "fov": 61.02186555927075,
+    "colours": [
+      [
+        232,
+        44,
+        153
+      ],
+      [
+        71,
+        112,
+        91
+      ]
+    ],
+    "brightness": 0.7027015841320234,
+    "blur_px": 0.0,
+    "noise_sigma": 0.10548011030200144,
+    "crf": 28,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "9439c526cd20548e",
+    "family_id": "9439c526cd20548e1a3d96ef252b802fc17ca366011c0455d14ab0dba7aba73e",
+    "split": "train",
+    "seed": 2486813990,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 8.694850056970608,
+    "start_s": 17.514179580174442,
+    "offset_base_m": 5.597090030309857,
+    "offset_peak_m": 8.6280782921513,
+    "excursion_centre": 0.3640871660621323,
+    "excursion_width": 0.2486273171071099,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      68.2196176436927,
+      -20.174838501889386,
+      17.49774099205643
+    ],
+    "camera_target": [
+      27.698065566276533,
+      3.27375374631589,
+      0.0
+    ],
+    "fov": 45.510319547706125,
+    "colours": [
+      [
+        63,
+        114,
+        197
+      ],
+      [
+        123,
+        183,
+        47
+      ]
+    ],
+    "brightness": 0.7614522469768891,
+    "blur_px": 0.0,
+    "noise_sigma": 0.8879152641216155,
+    "crf": 18,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "8afd096549d86199",
+    "family_id": "8afd096549d861994cf38ec1ec0c66c80fa6049f990bf576b3b6f1c0093d74b4",
+    "split": "train",
+    "seed": 2331838821,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 13.38681200271917,
+    "start_s": 17.174721943654653,
+    "offset_base_m": 4.674258336907769,
+    "offset_peak_m": 8.130603217497514,
+    "excursion_centre": 0.30244628080134106,
+    "excursion_width": 0.17626574187467253,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      53.6672620779651,
+      -15.199794659485475,
+      20.44195528953965
+    ],
+    "camera_target": [
+      31.358538326536962,
+      6.345251835393086,
+      0.0
+    ],
+    "fov": 46.85893894068983,
+    "colours": [
+      [
+        121,
+        55,
+        60
+      ],
+      [
+        213,
+        175,
+        151
+      ]
+    ],
+    "brightness": 1.1554840734489313,
+    "blur_px": 0.0,
+    "noise_sigma": 1.839599632175888,
+    "crf": 20,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "431be1d791f7cb89",
+    "family_id": "431be1d791f7cb898ca12f1cac2beb86b73567e3936ad5f4375b7286068949d5",
+    "split": "train",
+    "seed": 1125900759,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 19.473432843261936,
+    "start_s": 10.566525901100938,
+    "offset_base_m": 4.377378609433177,
+    "offset_peak_m": 7.019068802571246,
+    "excursion_centre": 0.37260731189792895,
+    "excursion_width": 0.21606840041998704,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      62.111685011535826,
+      -26.33731112580936,
+      21.16222335888415
+    ],
+    "camera_target": [
+      30.700474786307197,
+      5.74389327586516,
+      0.0
+    ],
+    "fov": 47.573499409269175,
+    "colours": [
+      [
+        204,
+        28,
+        177
+      ],
+      [
+        86,
+        34,
+        86
+      ]
+    ],
+    "brightness": 1.1474646784037388,
+    "blur_px": 0.0,
+    "noise_sigma": 2.7640348402485238,
+    "crf": 21,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "82adb47926f286f4",
+    "family_id": "82adb47926f286f43f0a5079e2dbe4fb2209cb0ddce192056046fe150a1a3378",
+    "split": "validation",
+    "seed": 2192422009,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 8.369141386776377,
+    "start_s": 8.21990636811455,
+    "offset_base_m": 3.7534665413790385,
+    "offset_peak_m": 7.1278732668385745,
+    "excursion_centre": 0.3622953029824726,
+    "excursion_width": 0.17373604999341513,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      68.81645046956471,
+      -23.75438912799529,
+      10.228862593178672
+    ],
+    "camera_target": [
+      18.167484996833696,
+      -2.2604127865526467,
+      0.0
+    ],
+    "fov": 45.19172838514551,
+    "colours": [
+      [
+        45,
+        52,
+        26
+      ],
+      [
+        110,
+        84,
+        83
+      ]
+    ],
+    "brightness": 0.9018141102772381,
+    "blur_px": 0.4,
+    "noise_sigma": 2.1953421887502054,
+    "crf": 26,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "47e3d12712af2d0b",
+    "family_id": "47e3d12712af2d0b41f8e222e3a1fe967e17e0d923a16053e64c8447ef10f43b",
+    "split": "train",
+    "seed": 1206112551,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 21.602650647992302,
+    "start_s": 16.396205875661757,
+    "offset_base_m": 5.588899937369707,
+    "offset_peak_m": 8.048894814100574,
+    "excursion_centre": 0.557772704241582,
+    "excursion_width": 0.07595218272948978,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      64.7668135682588,
+      -24.39748410548076,
+      19.43295272508662
+    ],
+    "camera_target": [
+      36.80478622486296,
+      12.406382786192424,
+      0.0
+    ],
+    "fov": 59.35133580208742,
+    "colours": [
+      [
+        232,
+        126,
+        95
+      ],
+      [
+        170,
+        29,
+        88
+      ]
+    ],
+    "brightness": 0.7228533221932996,
+    "blur_px": 0.8,
+    "noise_sigma": 0.8187057711816164,
+    "crf": 18,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "01e2e558d9987d61",
+    "family_id": "01e2e558d9987d619959dd94721e3bdbb6d453aaf9cf0b12121a5879e3f87f29",
+    "split": "train",
+    "seed": 31647064,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 9.45394026326196,
+    "start_s": 16.58373797036586,
+    "offset_base_m": 5.6843650991940144,
+    "offset_peak_m": 8.329352104323373,
+    "excursion_centre": 0.5882464555325784,
+    "excursion_width": 0.0875204798800864,
+    "cars": 1,
+    "same_livery": true,
+    "camera_position": [
+      57.054548049894095,
+      -25.986454133377997,
+      15.697402841520034
+    ],
+    "camera_target": [
+      27.511342260642927,
+      3.1336732638338045,
+      0.0
+    ],
+    "fov": 43.83024349307761,
+    "colours": [
+      [
+        196,
+        184,
+        107
+      ],
+      [
+        224,
+        71,
+        142
+      ]
+    ],
+    "brightness": 1.1817355855690066,
+    "blur_px": 0.8,
+    "noise_sigma": 2.8512110007828086,
+    "crf": 21,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "a424bc61e40c9b1e",
+    "family_id": "a424bc61e40c9b1e21e5f4c1fae3bc39b0f7860aa367aa1c1ad06f8940373826",
+    "split": "validation",
+    "seed": 2753870945,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 17.042390671692132,
+    "start_s": 17.601891420951144,
+    "offset_base_m": 3.0441518072332094,
+    "offset_peak_m": 7.109036898542189,
+    "excursion_centre": 0.3318281318038789,
+    "excursion_width": 0.11198120422149174,
+    "cars": 1,
+    "same_livery": false,
+    "camera_position": [
+      67.7413808420341,
+      -24.508043788679302,
+      11.164312158080982
+    ],
+    "camera_target": [
+      34.508897654496685,
+      9.583951889315516,
+      0.0
+    ],
+    "fov": 46.301277602498786,
+    "colours": [
+      [
+        36,
+        104,
+        85
+      ],
+      [
+        38,
+        95,
+        72
+      ]
+    ],
+    "brightness": 0.9789511725627362,
+    "blur_px": 0.8,
+    "noise_sigma": 1.1646267300657491,
+    "crf": 26,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "c95843b89a72c6ec",
+    "family_id": "c95843b89a72c6ecd2e78fccfb9b29d82d09fa0c57ee5db56f19198f779c2f62",
+    "split": "train",
+    "seed": 3378004920,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 18.711513336166327,
+    "start_s": 11.586964341591745,
+    "offset_base_m": 3.5738826933427514,
+    "offset_peak_m": 7.535074307140713,
+    "excursion_centre": 0.4362635755968223,
+    "excursion_width": 0.11383614861159574,
+    "cars": 2,
+    "same_livery": false,
+    "camera_position": [
+      60.7310506015203,
+      -14.233687816247594,
+      13.05125712969787
+    ],
+    "camera_target": [
+      30.948248499594776,
+      5.967575537330142,
+      0.0
+    ],
+    "fov": 51.631726395235134,
+    "colours": [
+      [
+        158,
+        171,
+        88
+      ],
+      [
+        64,
+        51,
+        191
+      ]
+    ],
+    "brightness": 1.1097142273426712,
+    "blur_px": 0.0,
+    "noise_sigma": 0.2394783606160109,
+    "crf": 27,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "c177ebf534aca041",
+    "family_id": "c177ebf534aca041c82058791cb4e796d680cfa7cd945532b648007579bfe661",
+    "split": "test",
+    "seed": 3245861877,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 16.487363422495243,
+    "start_s": 13.521303864807384,
+    "offset_base_m": 6.201108903993273,
+    "offset_peak_m": 8.640550625008977,
+    "excursion_centre": 0.6903392375507867,
+    "excursion_width": 0.17294672969798663,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      65.0445917875108,
+      -18.08812719962436,
+      20.554347746376845
+    ],
+    "camera_target": [
+      30.780146663060762,
+      5.815462978117295,
+      0.0
+    ],
+    "fov": 44.96234937586728,
+    "colours": [
+      [
+        88,
+        106,
+        198
+      ],
+      [
+        150,
+        68,
+        205
+      ]
+    ],
+    "brightness": 0.8407259929509779,
+    "blur_px": 0.8,
+    "noise_sigma": 0.1669411499499518,
+    "crf": 28,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  },
+  {
+    "id": "3ca1d6860de44b24",
+    "family_id": "3ca1d6860de44b2466499f527c2ba8597077b93a9cfd5244d5ade3b01d507e1d",
+    "split": "train",
+    "seed": 1017239174,
+    "fps": 12,
+    "frames": 24,
+    "width": 480,
+    "height": 270,
+    "speed_mps": 12.288264293275343,
+    "start_s": 17.22784966967908,
+    "offset_base_m": 3.65713514674925,
+    "offset_peak_m": 7.313344835329198,
+    "excursion_centre": 0.4391587763794588,
+    "excursion_width": 0.07080954641479896,
+    "cars": 2,
+    "same_livery": true,
+    "camera_position": [
+      59.91714461654561,
+      -26.09794671610535,
+      13.74845455678349
+    ],
+    "camera_target": [
+      30.507761916725826,
+      5.572155704540934,
+      0.0
+    ],
+    "fov": 61.73809299546485,
+    "colours": [
+      [
+        215,
+        113,
+        127
+      ],
+      [
+        90,
+        119,
+        228
+      ]
+    ],
+    "brightness": 1.0167005552037551,
+    "blur_px": 0.4,
+    "noise_sigma": 1.885316489553217,
+    "crf": 24,
+    "telemetry_sigma_m": 1.5,
+    "telemetry_latency_s": 0.15
+  }
+]

@@ -1,0 +1,7 @@
+# Steward vision pipeline (separate from the simulator's requirements.txt).
+numpy>=2.0
+scipy>=1.13
+opencv-python-headless>=4.10
+torch>=2.4
+# Optional: only needed for the zero-shot COCO baseline in evaluate.
+ultralytics>=8.3

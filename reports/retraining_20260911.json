@@ -1,0 +1,45 @@
+{
+  "run_url": "https://github.com/arnavmandre/vmax/actions/runs/34606745423",
+  "source_commit": "38f42c6f82a277802515818a90d4c4aed66a1068",
+  "selected_candidate": 2,
+  "training_scenes": 59,
+  "validation_scenes": 15,
+  "training_frames": 708,
+  "blind_scenes": 40,
+  "metrics": {
+    "baseline": {
+      "clips": 40,
+      "event_precision": null,
+      "event_recall": 0,
+      "true_positives": 0,
+      "false_reports": 0,
+      "missed_events": 17,
+      "margin_p50_m": null,
+      "margin_p95_m": null,
+      "confidence_calibration": "not measured",
+      "matching": "same truth-associated car, temporal IoU >= 0.3, one-to-one",
+      "receipt_sha256": "3b56f0214e2a884b5e04e0a2e7338105c4c485ba1745e839fb85739c8e9f6423",
+      "labels_sha256": "076d0763326f33628dc5302a4364f5c58698e7f1eaea60fa3f011c1eaaecb5af"
+    },
+    "retrained": {
+      "clips": 40,
+      "event_precision": 0.7333333333333333,
+      "event_recall": 0.6470588235294118,
+      "true_positives": 11,
+      "false_reports": 4,
+      "missed_events": 6,
+      "margin_p50_m": 0.3441388804928063,
+      "margin_p95_m": 1.247004951970078,
+      "confidence_calibration": "not measured",
+      "matching": "same truth-associated car, temporal IoU >= 0.3, one-to-one",
+      "receipt_sha256": "cdef2e2a96793b34f12f80c95a108679e63869fbac3c3824bb831e780dfb7136",
+      "labels_sha256": "076d0763326f33628dc5302a4364f5c58698e7f1eaea60fa3f011c1eaaecb5af"
+    }
+  },
+  "limitations": [
+    "Synthetic fixed track and assets with exact camera calibration",
+    "Not suitable for automated penalties",
+    "Confidence calibration not measured",
+    "Margin errors computed on evaluator-associated observations, not missed frames"
+  ]
+}
