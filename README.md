@@ -1,218 +1,284 @@
-> **Current final demo:** Run `start_demo.bat`, then open http://127.0.0.1:8010. The bundled `final_demo/` contains 16 multi-angle clips and saved predictions. Below 80% mean fast confidence uses both models; 80% or higher uses fast only. See [final demo details](final_demo/README.md).
+# Trackshift VMAX — two-model track-limits review
 
-# Trackshift VMAX — new tyre-pose experiment
+VMAX decides whether a car went **off track** at a corner and presents that call
+to a human steward, who makes the final decision. It combines two models:
 
-We are training a new four-tyre-contact model by fine-tuning official pretrained
-Ultralytics YOLO26 nano pose weights. The previous VMAX-Net weights and application
-are not used in this implementation. This is a new training experiment, not a
-claim to have invented YOLO or its pretrained backbone.
+- a **fast model** (YOLO26n-pose) that analyses every clip, and
+- a **deep model** (Mask2Former + Swin-Tiny) that gives a second opinion on the
+  clips the fast model is least confident about.
 
+Everything here is **synthetic**: a custom simulator renders one corner with
+exactly known cameras. Nothing in this repository has been tested on real race
+footage. See [Limits](#limits).
 
-## Changes from the earlier experiment
+## Quick start
 
-- Transfer learning from an official pretrained pose model.
-- A new dataset converter for four ordered tyre contacts.
-- Full-frame training, using train/validation scene splits from the prepared data.
-- Approximate projected body boxes and inferred contact labels; actual tyre
-  visibility is not established by these annotations.
-- Validation-only checkpoint and confidence-threshold selection.
-- A fresh 40-scene blind seed, separate from previous evaluated clips.
-- Saved prediction hashes before scoring; explicit misses and false reports.
-- New geometry/tracking/evaluation integration, with a simulator-contact check.
+On Windows, double-click **`start_demo.bat`**. It starts the server if it isn't
+already running and opens http://127.0.0.1:8010.
 
-`experiment.py` records the fixed protocol: 20 epochs, image size 960, batch 8,
-seed 12092026; learning rate 0.001; validation thresholds 0.15, 0.3 and 0.5.
-The old 40 test clips are not used for model selection or this final evaluation.
-
-## Multi-angle capture and trajectory smoothing
-
-Each simulated incident is now rendered from a 360-degree ring of cameras around
-it (`--angles`, default 6; the fresh blind test uses 4) instead of one random
-angle, so a boundary call isn't decided by whichever single camera happened to
-be watching. All angles of one incident share `family_id` and the same ground
-truth; only the camera differs, and they're kept together in the same
-train/validation/test split. `experiment.py score` fuses the angles into a
-per-incident decision (an incident counts as caught if any angle caught it) and
-reports a `consensus_summary`/`incidents` block alongside the per-angle metrics,
-with a `confidence` value equal to the fraction of angles that agree.
-
-Per-track margins are also smoothed with a constant-velocity Kalman filter
-(`smooth_track` in `experiment.py`) — the same idea tennis line-calling uses,
-reconstructing the trajectory instead of trusting one noisy frame — and used to
-find the sub-frame instant a track's estimated clearance crosses the boundary.
-The raw per-frame margin is kept alongside it (`margin_m` vs `smoothed_margin_m`)
-so smoothing's effect is visible rather than silently replacing the measurement.
-
-## Execution and results
-
-The Actions workflow “Train new pretrained tyre pose model” installs CPU training
-dependencies, generates fresh development clips locally, trains, selects, generates
-fresh blind clips, scores, and uploads an artifact. On successful completion it
-also commits selected weights and blind evidence under `trained_model/`.
-A successful workflow does not mean that an accuracy target was met.
-
-New results are pending until that workflow completes.
-
-For a local run with Python 3.12 and FFmpeg,
-on CPU:
+Or run it directly:
 
 ```bash
-python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-python -m pip install 'ultralytics==8.4.149' scipy pillow numba
-python -m unittest discover
-python experiment.py generate --data data/development
-python experiment.py prepare --data data/development
-python experiment.py train
-python experiment.py select --data data/development
-python experiment.py test
+.venv/Scripts/python.exe vmax_live_server.py      # then open http://127.0.0.1:8010
 ```
 
-`experiment.py train` auto-detects an available CUDA GPU (`torch.cuda.is_available()`)
-and switches `device`/`workers`/`amp` accordingly — the epoch/batch/imgsz/seed
-hyperparameters are unchanged either way, so a local GPU run stays comparable
-to a CPU/CI run, just faster. For a CUDA machine, install a matching
-CUDA build of torch instead of the CPU wheel above (check `nvidia-smi` for the
-driver's CUDA version and use the matching `--index-url`, e.g.
-`https://download.pytorch.org/whl/cu124`), then run the same commands.
+The bundled **`final_demo/`** folder has everything playback needs: 16 clips (4
+incidents × 4 camera angles), their camera calibration, saved fast-model
+predictions, and cached deep-model results. No GPU, model weights or inference
+are needed just to watch and review.
 
-Use a fresh `experiment_out` directory per experiment. Installed dependency
-versions, initial pretrained checkpoint hash and selected checkpoint hash are
-saved. Exact reproduction may depend on hardware and dependency versions.
-The workflow no longer downloads development data from another repository.
-Use a fresh dataset directory; preparation rejects the old low-resolution artifact.
+## How the pipeline works
 
-## Kerb-aware high-resolution experiment
+```
+ simulator/            experiment.py           vmax_export.py          vmax_live_server.py        Steward UI
+ renders clips   ──►   trains + evaluates ──►  runs fast model   ──►   serves clips, queues  ──►  review,
+ (4 angles each)       the fast model          on each clip           deep model below 80%        decide
+                                                                          │
+                                                                          ▼
+                                                        vmax_model2/…/vmax_bridge.py
+                                                        runs the deep model (own venv)
+```
 
-Development and blind clips use 960x540 output, rendered at 1920x1080 and
-Lanczos-downsampled before sensor blur, noise and video compression. Training
-and inference use `imgsz=960`. The protocol retains 12 fps and two-second clips
-to keep temporal sampling comparable.
+1. **Render.** `simulator/` produces 960×540, 12 fps, two-second clips of one
+   incident from a ring of cameras. Every angle of an incident shares the same
+   ground truth, and the camera placement differs per incident.
+2. **Fast model.** `experiment.py` fine-tunes pretrained YOLO26n pose weights to
+   find four tyre contact points per car per frame. It projects those points onto
+   the track, measures clearance from the boundary, tracks the car across frames,
+   and flags **candidate windows** where the car is past the line.
+3. **Export.** `vmax_export.py` runs the selected fast model over clips and
+   writes one prediction file per clip (`vmax.predictions.v1`), plus the video and
+   its camera calibration.
+4. **Cascade.** When the server starts, it computes each clip's **mean confidence
+   score** (the fast model's average detection confidence across the clip).
+   - **Below 0.80:** the clip goes to the deep model, one job at a time in the
+     background. The result is cached as `<clip>.bettermodel.json`.
+   - **0.80 or higher:** fast model only. These clips are never sent to the deep model.
+5. **Deep model.** `vmax_bridge.py` crops each frame around the car, using the
+   fast model's detected tyre points, and runs the deep model on the crop. That
+   model predicts the tyre boundary edges and decides off track, on track, or
+   *inconclusive* (it declines when its evidence is too weak).
+6. **Review.** The UI shows the result of every clip, and for escalated clips
+   whether the two models **agree** (high confidence) or **disagree / deep
+   inconclusive** (low confidence). The steward records the decision.
 
-`experiment.py generate` creates 96 incidents with four cameras each using
-seed 2026091218. Every view of a family stays in its assigned split. The separate
-40-incident blind set uses seed 2026091219 and four cameras. The fixed 20-epoch
-protocol starts from official pretrained weights, selects the checkpoint and
-threshold on validation only, then opens the blind set. Historical results on
-other seeds are not a controlled comparison.
+The browser never runs a model. It only displays results that were already
+computed.
 
-Each tyre label uses full 3D projection of its raised kerb contact. Horizontal
-violation logic is unchanged. The evaluator still uses a flat homography with
-the existing bounded kerb-parallax bias; body/suspension geometry stays simplified.
-Supersampling targets tyre silhouettes and thin track lines. This change does
-not add physically based motion blur or establish real-footage accuracy.
+## The two models
 
-The CPU renderer batches lighting and camera transforms and reuses each frame's
-car geometry across cameras. Optional Numba compilation accelerates rasterization;
-a tested NumPy fallback remains available. One four-camera, 24-frame 960x540
-incident took 59.9 seconds with NumPy and 10.3 seconds with Numba locally,
-including encoding. These single-incident timings are hardware-dependent.
-Pixel/depth equivalence is regression-tested.
+| | Fast model | Deep model |
+|---|---|---|
+| Architecture | YOLO26n-pose (CNN) | Mask2Former pixel decoder + Swin-Tiny backbone, custom heatmap head |
+| Output | 4 tyre contact points + confidence score, per car per frame | 8 tyre boundary endpoints, then off / on / inconclusive |
+| Runs on | every clip | clips with mean confidence score below 0.80 |
+| Time per 2 s single-camera clip | ~0.39 s (RTX 5060, includes decoding) | ~7.5 s (includes ~5 s checkpoint load) |
+| Code | `experiment.py`, `geometry.py` | `vmax_model2/Track_limit_detection/` |
+| Weights | `trained_model/`, `weights/` | `training_runs/boundary_heatmaps_…/best_model/` (Git LFS, 128 MB) |
 
-Use `--out` for experiment artifacts and `--data` for development data. On
-Windows, keep both outside OneDrive, in a fresh run folder:
+Both models use the same track model (a 40 m radius corner, 7 m track
+half-width) and the same camera calibration format. This is what lets the deep
+model accept the fast model's clips without conversion.
+
+### Fast model blind-test results
+
+Evaluated once, on 40 fresh incidents × 4 cameras = 160 clips that were never
+used for training or model selection. Operating threshold is 0.5.
+
+| Metric | Result |
+|---|---|
+| Single-camera accuracy (clip correct: no miss, no false report) | **95.62%** — 153 of 160 clips |
+| Single-camera event F1 | 96.05% (precision 95.51%, recall 96.59%) |
+| Four-camera accuracy (incident caught by any angle) | 100% — 40 of 40 incidents |
+| Clearance error | 6.5 cm median, 32.7 cm 95th percentile |
+| Frames with a detected car | 93.49% |
+| Previous model on the same blind clips | 34.2% single-camera event F1 |
+
+A second, independently generated set of 500 clips gave 97.0% single-camera
+event F1.
+
+Read these numbers with care:
+
+- **The four-camera figure is generous by design.** It counts an incident as
+  caught if any one of its four angles caught it. Use the single-camera figure
+  for what one camera can do.
+- **The fast model never abstains.** It has no "sent for review" outcome, so its
+  accuracy is not directly comparable to the deep model's figures, which count
+  abstentions as failures.
+- **The deep model has not been evaluated on these clips.** It gives plausible
+  verdicts, but its accuracy on this simulator's footage is unmeasured. Treat its
+  output as a second opinion, not a benchmarked result.
+
+## The steward UI
+
+The server (`vmax_live_server.py`) serves `VMAXPROTO/VMAX-Steward-Review-v2.1.html`
+together with `VMAXPROTO/autoload.js`, which loads the clips and their saved
+results.
+
+- **Loading screen.** A progress bar blocks the review UI until every clip and
+  its results have loaded.
+- **Clip queue.** Clips are sorted by **incident**: least confident incidents at
+  the top, and all clips of an incident kept together. Each clip shows the fast
+  model's `IN TRACK` / `OFF TRACK` verdict, its confidence score and its candidate
+  windows. After the steward records a decision, the clip gets a **red** border
+  (off track) or a **green** border (on track).
+- **Player.** Detected tyre points (FL/FR/RL/RR) are drawn on the video as it plays.
+- **Model status.** The header shows `Fast: connected · Deep: connected/offline`
+  for the current clip. The line below the clip title says which models processed
+  it and, where both did, whether they agree.
+- **Run on deep model.** Available on escalated clips. It opens a popup that
+  reports progress frame by frame, then shows the deep model's verdict.
+- **Human review.** The options are *Off track*, *On track* and *Insufficient
+  evidence*. A decision applies to **every clip of that incident**, because the
+  steward is judging the incident, not one camera angle.
+- **Export decisions.** Downloads the review record as JSON: decisions, notes,
+  imported predictions and edit history.
+
+Reviews are saved in the browser's local storage. Export them before clearing the
+browser or moving to another computer.
+
+## Running each stage
+
+### Environments
+
+This project uses **two separate Python virtual environments**, and they must stay
+separate. They need different PyTorch versions, so the deep model always runs in
+its own process.
+
+| Environment | Path | Used for |
+|---|---|---|
+| Main | `.venv/` | simulator, fast model, export, server, tests |
+| Deep model | `vmax_model2/Track_limit_detection/.venv_bench/` | `vmax_bridge.py` only |
+
+The main environment has no `pip`. Install packages with
+`uv pip install --python .venv/Scripts/python.exe <package>`. FFmpeg must be on
+`PATH`, or set the `FFMPEG` environment variable to its full path.
+
+### Serve your own clips
+
+```bash
+# Run the fast model on blind-test clips and write the outputs
+# (edit MAX_INCIDENTS in vmax_export.py to change how many incidents)
+.venv/Scripts/python.exe vmax_export.py
+
+# Serve that folder instead of final_demo/
+.venv/Scripts/python.exe vmax_live_server.py --data C:/Users/<you>/trackshift_runs/kerb960/vmax_live
+```
+
+When the server starts, it prints how many clips are below the threshold and how
+many of them were queued for the deep model (the rest already have a cached
+result). If you change Python code, restart the server. HTML and JavaScript
+changes show up on a browser refresh.
+
+### Run the deep model on one clip
+
+```bash
+cd vmax_model2/Track_limit_detection
+.venv_bench/Scripts/python.exe vmax_bridge.py \
+  --video <clip>.mp4 --camera-json <clip>.camera.json --fast-predictions <clip>.json
+```
+
+The script prints a single JSON result. The server reads it through two endpoints:
+
+- `POST /api/better/<clip_id>` queues the clip.
+- `GET /api/better/<clip_id>` returns its status, a result once finished, and
+  frame-by-frame progress while it runs.
+
+A clip at or above the threshold returns `skipped` from both endpoints.
+
+### Train and evaluate the fast model
 
 ```powershell
 $run = "$env:USERPROFILE/trackshift_runs/kerb960"
 python experiment.py generate --data "$run/development" --out "$run/experiment"
-python experiment.py prepare --data "$run/development" --out "$run/experiment"
-python experiment.py train --out "$run/experiment"
-python experiment.py select --data "$run/development" --out "$run/experiment"
-python experiment.py test --out "$run/experiment"
+python experiment.py prepare  --data "$run/development" --out "$run/experiment"
+python experiment.py train    --out "$run/experiment"
+python experiment.py select   --data "$run/development" --out "$run/experiment"
+python experiment.py test     --out "$run/experiment"
 ```
 
-FFmpeg must be on PATH, or set `FFMPEG` to its full executable path. The manifest
-records render settings and generation time. The experiment records the protocol,
-dataset manifest hash, source families and render settings. Use a new output
-directory when changing the protocol. Existing datasets and model evidence are
-preserved.
+The fixed protocol starts from official pretrained YOLO26n pose weights. It trains
+for 20 epochs at image size 960, batch 8 and seed 12092026. The checkpoint and
+threshold (0.15, 0.3 or 0.5) are chosen on validation data only. After that, a
+fresh 40-incident blind set is rendered and scored, exactly once. The development
+set uses 96 incidents with seed 2026091218, and the blind set uses seed 2026091219.
+Training uses a CUDA GPU when one is available. The run saves the protocol,
+dependency versions, dataset hashes and checkpoint hashes. Keep run folders
+outside OneDrive, and use a new output folder for each experiment.
 
-## Limits and attribution
+A 10-epoch continuation was also trained and evaluated. The original 20-epoch
+checkpoint still won selection.
 
-This is still a stylized same-corner/assets synthetic experiment using exact
-camera calibration and a rectangular planar tyre model. It does not establish
-real F1 accuracy, driver identity, calibrated offence probabilities or operational
-readiness. Detector scores are not probabilities of guilt.
+### Tests
 
-Ultralytics is an external open-source dependency with its own licensing terms
-(AGPL-3.0 or an applicable commercial licence). Its implementation and pretrained
-weights are not original team work. See official documentation for attribution:
-https://docs.ultralytics.com/tasks/pose/
-https://docs.ultralytics.com/datasets/pose/
-
-## Steward review GUI
-
-Run `py review_server.py` on Windows, or double-click `start_demo.bat`.
-On Linux/macOS use `python3 review_server.py`. Open http://127.0.0.1:8000.
-This player uses only Python's standard library; PyTorch is needed for inference
-and training, not for viewing saved results.
-
-The new interface provides a clip queue, original video, tyre and track-boundary
-overlays, frame stepping, playback speed, tyre crops, clearance timeline,
-per-track detector scores, per-clip mean scores and observed-frame coverage,
-candidate windows, locally saved human decisions/notes and JSON/CSV export.
-Synthetic telemetry sample availability is shown as context, not fused evidence.
-Local video files can be opened for playback; they remain explicitly unanalysed
-and have no predicted score or verdict. Unknown FPS disables frame stepping.
-
-The “Steward console and training handoff” workflow verifies browser operation
-and attaches completed training artifacts automatically. If training completed
-before this workflow was installed, run that workflow manually with training run
-ID 34683394778. The verified review requires `trained_model/review_integrity.json`;
-unverified sidecars are not displayed as model analysis.
-
-Until model output is installed, the GUI shows an honest empty state. It does not
-invent example predictions. Keep the server terminal open. Decisions are stored
-in the current browser; export them before changing computers or clearing storage.
-
-No higher accuracy is claimed until the new blind results are available. Scores
-remain uncalibrated and real-footage inference, driver naming, telemetry fusion,
-and moving-camera calibration remain outstanding; see REQUIREMENTS_STATUS.md.
-# Lightweight visual previews
-
-For a separate, unscored demo collection, run:
-
-```powershell
-.venv/Scripts/python.exe -m simulator.demo --out C:/Users/arnav/trackshift_runs/my_demo
+```bash
+.venv/Scripts/python.exe -m unittest discover        # 28 tests: geometry, rendering, experiment, cascade, server
+cd vmax_model2/Track_limit_detection
+.venv_bench/Scripts/python.exe -m unittest tests.test_vmax_bridge   # 2 tests, runs real inference
 ```
 
-This generates eight 1920x1080, 60 fps, four-second H.264 clips at CRF 16,
-rendered at 2400x1350 and Lanczos-downsampled for smoother edges,
-with varied liveries, fixed camera viewpoints, lateral excursions and a two-car
-scene. It adds trackside rails, continuous terrain, helmet/mirror/wing details,
-and surface/contact-shadow effects. Set `FFMPEG` to your executable if needed.
-No training or model inference is run. Labels are separate under `sealed/`;
-`manifest.json` records the seed, cameras and video hashes. These are curated
-synthetic demo scenes, not a blind accuracy benchmark once viewed. The underlying
-car geometry and physics remain simplified. Playback is 60 fps; rendering is offline.
+## Simulator
 
-The CPU dataset renderer supports opt-in `--appearance enhanced`: world-space
-asphalt/grass/paint variation, a rubber-darkened track band, a sky gradient and
-approximate soft car contact shadows. Surface detail fades below pixel size to
-reduce aliasing. These effects change RGB only, preserving depth and labels.
-Classic appearance remains the default for the existing experiment protocol.
-The appearance choice is recorded in each dataset's generator metadata.
-This is still a stylized renderer: car geometry, suspension and lighting remain
-simplified; it does not implement physical motion blur or photorealistic materials.
+Clips are rendered at 1920×1080 and downsampled to 960×540 before blur, noise and
+compression are added, so tyre edges and thin track lines stay clean. Tyres sit on
+a raised kerb about 5 cm high, and labels use full 3D projection. Numba speeds up
+the renderer, and a tested NumPy fallback is kept. One four-camera incident takes
+about 10 s to render with Numba, compared with 60 s without it.
 
-Generate six reproducible before/after stills (three boundary cases, two camera
-heights) without FFmpeg, training or a full dataset:
+Optional extras:
 
-```powershell
-.venv/Scripts/python.exe -m simulator.preview --out C:/Users/arnav/trackshift_runs/visual_preview_v1
-```
+- `--appearance enhanced` on `python -m simulator.generate` adds asphalt, grass and
+  paint texture plus soft contact shadows. It changes colour only; geometry and
+  labels are unchanged.
+- `python -m simulator.preview --out <dir>` renders before-and-after stills
+  without FFmpeg or training.
+- `python -m simulator.demo --out <dir>` renders an unscored 1080p60 showcase with
+  varied liveries and a two-car scene.
+- `python -m simulator.analyse_demo` runs both models on a demo queue.
+- `python -m simulator.install_demo_ui` adds demo videos to a queue for playback only.
 
-Open `comparison.jpg` in that directory. The preview also records exact point
-margins and cameras in `preview.json`; these cases are visual checks, not a new
-accuracy benchmark. For videos, add `--appearance enhanced` to
-`python -m simulator.generate` using a new output directory. Camera variation and
-boundary controls in the preview do not change the training distribution.
+These are visual demos, not accuracy benchmarks.
 
-To replace the VMAXPROTO website queue with only the latest demo clips:
+## Limits
 
-```powershell
-.venv/Scripts/python.exe -m simulator.install_demo_ui --source C:/Users/arnav/trackshift_runs/demo_eight_1080p60 --destination C:/Users/arnav/trackshift_runs/kerb960/vmax_live --replace
-```
+- **Synthetic only.** One corner, one car design, exactly known cameras, no real
+  footage. On a real F1 photo (`tri.png`) the fast model detected the car at only
+  0.40 confidence, below its 0.5 threshold.
+- **Confidence scores are not probabilities.** They are uncalibrated detector
+  outputs, not the probability of an offence.
+- **The deep model's accuracy on these clips is unmeasured.** It is also trained on
+  a separate synthetic set.
+- **The deep model depends on the fast model to find the car.** Its crop comes
+  from the fast model's tyre points. Escalated clips are the ones where those
+  points are least reliable. When the crop is poor, the deep model abstains rather
+  than guessing.
+- **Clearance uses a flat-ground projection**, so kerb height introduces a small,
+  bounded error.
+- Car body and suspension motion are simplified, and there is no physically based
+  motion blur.
+- Driver identity, telemetry fusion and moving-camera calibration are not
+  implemented. See `REQUIREMENTS_STATUS.md`.
 
-Refresh http://127.0.0.1:8010 after installation. Old videos remain on disk and
-the previous queue is backed up. New clips are playback-only, with no invented
-model predictions.
+## Older steward console
+
+`review_server.py` (port 8000) with `steward_ui/` is the earlier, single-model
+review console. It still works, but the demo above supersedes it.
+
+## Further documentation
+
+- `final_demo/README.md` — contents of the bundled demo and its integrity hashes.
+- `HANDOFF_FOR_CHATGPT.md` — a full technical handoff with setup pitfalls.
+- `docs/superpowers/specs/2026-09-13-accurate-model-cascade-design.md` — cascade
+  design, including the changes made during implementation.
+- `VMAXPROTO/INTEGRATION.md` — the prediction file format the UI reads.
+- `CLAUDE_HANDOFF.md` — detailed record of the fast-model training and evaluation.
+
+## Attribution
+
+- **Ultralytics YOLO26** pose weights and training code are external, under
+  AGPL-3.0 or a commercial licence: https://docs.ultralytics.com/tasks/pose/
+- The **deep model** builds on Hugging Face `transformers` and the pretrained
+  `facebook/mask2former-swin-tiny-coco-instance` checkpoint. Its heatmap head and
+  training are this project's own work.
+
+Neither backbone is original team work.
