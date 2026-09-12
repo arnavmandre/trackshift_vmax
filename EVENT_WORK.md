@@ -40,3 +40,28 @@ Actual validation status is recorded by Actions; model accuracy remains pending.
 ## Training output-path correction
 
 Run 34683394778 completed 20 epochs but saved checkpoints outside the archived experiment folder. Validation selection failed with FileNotFoundError, and there was no blind result. The checkpoint files were not retained by that run artifact. The new run uses an absolute output path, verifies and normalizes checkpoint locations, and pins the observed Ultralytics version 8.4.149. Training must be repeated; no accuracy improvement is claimed from the failed run.
+
+## Completed new pose-model experiment
+
+Fine-tuned official pretrained YOLO26 pose weights with a custom four-tyre layout. Earlier VMAX weights were not used. Simulator and development clips were reused with provenance disclosed.
+
+Fresh synthetic blind metrics (not real-F1 accuracy):
+
+```json
+{
+  "clips": 40,
+  "true_positives": 21,
+  "false_reports": 2,
+  "missed_events": 3,
+  "precision": 0.9130434782608695,
+  "recall": 0.875,
+  "f1": 0.8936170212765957,
+  "margin_p50_m": 0.2360049336458534,
+  "margin_p95_m": 0.8830636615067842,
+  "threshold": 0.5,
+  "labels_sha256": "81de63d74911d5c173b44c668fe4934e56fa7a435c0704104699fa13870530e6",
+  "prediction_sha256": "2b1568e4ce0cf066163f625e8c898c871c40c4f982d5ceaf5b2a5040fab5b41e",
+  "scope": "synthetic fixed-corner, exact camera; evaluator-only trajectory association; temporal IoU >= 0.3",
+  "confidence": "uncalibrated model scores; not incident probabilities"
+}
+```

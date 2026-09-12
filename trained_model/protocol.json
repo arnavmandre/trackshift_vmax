@@ -1,0 +1,29 @@
+{
+  "model": "yolo26n-pose.pt",
+  "epochs": 20,
+  "imgsz": 416,
+  "batch": 8,
+  "seed": 12092026,
+  "frame_stride": 4,
+  "thresholds": [
+    0.15,
+    0.3,
+    0.5
+  ],
+  "blind_seed": 2026091207,
+  "blind_count": 40,
+  "selection": "highest validation event F1, then lower margin P95",
+  "keypoints": [
+    "front_left",
+    "front_right",
+    "rear_left",
+    "rear_right"
+  ],
+  "initialization": "official COCO pretrained pose weights; no earlier VMAX weights",
+  "limitations": [
+    "same synthetic corner/assets",
+    "exact synthetic camera calibration",
+    "projected contact labels do not establish actual tyre visibility",
+    "uncalibrated detector scores, no driver identity"
+  ]
+}
