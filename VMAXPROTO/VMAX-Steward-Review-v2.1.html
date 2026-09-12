@@ -39,7 +39,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
 <main class="layout">
  <aside class="queue"><h2 class="queue-title">Clip queue · <span id="clipCount">0</span></h2><input class="search" id="search" placeholder="Search clip id…" aria-label="Search clips">
  <div class="filters" aria-label="Clip filters"><button class="active" data-filter="all" aria-pressed="true">All</button><button data-filter="candidates" aria-pressed="false">With candidates</button><button data-filter="pending" aria-pressed="false">Not reviewed</button></div>
- <select class="sort" id="sort" aria-label="Sort clips"><option value="added">Sort: added order</option><option value="confidence">Sort: lowest confidence first</option><option value="name">Sort: clip name</option><option value="pending">Sort: not reviewed first</option></select>
+ <select class="sort" id="sort" aria-label="Sort clips"><option value="confidence" selected>Sort: lowest confidence score first</option><option value="added">Sort: added order</option><option value="name">Sort: clip name</option><option value="pending">Sort: not reviewed first</option></select>
  <div class="clip-list" id="clips"></div>
  <div class="queue-help"><p>Videos stay on your device.<br>Reopen files after refreshing.</p><p style="margin-top:14px"><kbd>Space</kbd> Play / pause<br><kbd>←</kbd> <kbd>→</kbd> Step by configured FPS<br><kbd>M</kbd> Add bookmark · <kbd>N</kbd> Next unreviewed</p><button class="link" id="help" style="margin-top:14px">How this prototype works</button></div>
  </aside>
@@ -279,6 +279,16 @@ function list(){
  const query=$('search').value.toLowerCase();let rows=state.clips.filter(c=>(c.name+' '+c.id).toLowerCase().includes(query));
  if(filter==='candidates')rows=rows.filter(c=>c.evidence?.original?.candidates?.length); // includes explicitly simulated imports; manual bookmarks are not detections
  if(filter==='pending')rows=rows.filter(c=>!c.review||c.review.decision==='unreviewed');
+ if($('sort').value==='confidence'){
+  // Rank whole incidents, not clips: an incident's confidence score is the
+  // mean of its clips' confidence scores, lowest first, and every clip of an
+  // incident stays together in clip order. Unanalysed clips sort last.
+  const byIncident=new Map();
+  for(const c of state.clips){const k=incidentKey(c)??c.id,s=meanScore(c);if(s==null)continue;const e=byIncident.get(k)||{sum:0,n:0};e.sum+=s;e.n++;byIncident.set(k,e);}
+  const incScore=c=>{const e=byIncident.get(incidentKey(c)??c.id);return e?e.sum/e.n:Infinity;};
+  const clipNum=c=>Number(/Clip (\d+)/.exec(c.name||'')?.[1]??0);
+  rows.sort((a,b)=>incScore(a)-incScore(b)||(incidentKey(a)??'').localeCompare(incidentKey(b)??'',undefined,{numeric:true})||clipNum(a)-clipNum(b));
+ }
  if($('sort').value==='name')rows.sort((a,b)=>a.name.localeCompare(b.name));
  if($('sort').value==='pending')rows.sort((a,b)=>Number(!!a.review&&a.review.decision!=='unreviewed')-Number(!!b.review&&b.review.decision!=='unreviewed'));
  $('clips').replaceChildren();
@@ -599,7 +609,7 @@ window.VMAX={version:'2.1.0',importPredictions,validatePredictions:E.validate,ex
 $('openVideo').onclick=$('emptyOpen').onclick=()=>$('fileInput').click();
 $('fileInput').onchange=e=>addFiles(e.target.files);
 $('search').oninput=list;
-$('sort').onchange=()=>{if($('sort').value==='confidence')toast('Confidence is unavailable to sort by. Keeping added order until model results exist.');list();};
+$('sort').onchange=()=>list();
 for(const b of document.querySelectorAll('[data-filter]'))b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b));});list();};
 $('play').onclick=()=>{if(!hasVideo())return;if(video.paused)video.play().catch(()=>toast('This video could not be played. Try an MP4 or WebM supported by your browser.'));else video.pause();};
 $('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);$('seek').oninput=e=>seek(Number(e.target.value));
