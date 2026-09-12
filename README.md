@@ -267,11 +267,7 @@ review console. It still works, but the demo above supersedes it.
 ## Further documentation
 
 - `final_demo/README.md` — contents of the bundled demo and its integrity hashes.
-- `HANDOFF_FOR_CHATGPT.md` — a full technical handoff with setup pitfalls.
-- `docs/superpowers/specs/2026-09-13-accurate-model-cascade-design.md` — cascade
-  design, including the changes made during implementation.
 - `VMAXPROTO/INTEGRATION.md` — the prediction file format the UI reads.
-- `CLAUDE_HANDOFF.md` — detailed record of the fast-model training and evaluation.
 
 ## Attribution
 
