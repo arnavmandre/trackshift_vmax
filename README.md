@@ -1,33 +1,79 @@
-# Trackshift VMAX — event workspace
+# Trackshift VMAX — new tyre-pose experiment
 
-This branch is a fresh implementation workspace. It currently contains documentation only: no imported model, trained weights, application, saved predictions, demo launcher or import workflow.
+We are training a new four-tyre-contact model by fine-tuning official pretrained
+Ultralytics YOLO26 nano pose weights. The previous VMAX-Net weights and application
+are not used in this implementation. This is a new training experiment, not a
+claim to have invented YOLO or its pretrained backbone.
 
-## Prior work disclosure
+## Reuse disclosure
 
-A pre-existing VMAX prototype was copied into this repository at commit 3e3cd935a13b704dc42a27b4ef7f50a4dd61ff1d. Its model training and evaluation were completed on 11 September 2026, before the event. The import did not make that work new.
+The team explicitly requested reuse of its earlier simulator and prepared clips.
+`geometry.py` and `simulator/generate.py` are reused simulator code from the earlier
+project snapshot dee38ef9d3c492c4e478c1cd6a3ebb1c22661236. They are not claimed as
+new event-built implementation. The hash adapter is new. Only the CPU renderer
+is included here; the inherited optional OpenGL path requires the earlier renderer.
+The development data comes from the earlier archived experiment, run 34606745423.
+Its old weights and old blind predictions are removed from the training workspace.
 
-That snapshot remains on the `reference/pre-event-vmax-not-submission` branch for transparent disclosure and historical reference. The prior work was developed by this team in its earlier VMAX project. Git history has not been rewritten.
+This records the user's reuse instruction, not organiser approval. The organisers
+remain the authority on eligibility. No history or prior-work record is hidden.
 
-The prior checkpoint, code, UI, tests and reported 73.3% precision / 64.7% recall are not claimed as work built during this hackathon. No new event implementation or new event accuracy result is claimed by this documentation.
+## Changes from the earlier experiment
 
-## Rule basis and limits
+- Transfer learning from an official pretrained pose model.
+- A new dataset converter for four ordered tyre contacts.
+- Full-frame training, using train/validation scene splits from the prepared data.
+- Approximate projected body boxes and inferred contact labels; actual tyre
+  visibility is not established by these annotations.
+- Validation-only checkpoint and confidence-threshold selection.
+- A fresh 40-scene blind seed, separate from previous evaluated clips.
+- Saved prediction hashes before scoring; explicit misses and false reports.
+- New geometry/tracking/evaluation integration, with a simulator-contact check.
 
-The supplied Trackshift AMA FAQ, section 6, permits pre-event research and demo dataset preparation, permits the idea-submission prototype as a reference, and permits either a fresh prototype or enhancements to an existing prototype. Final judging considers work actually built during the event; an identical unchanged prototype is not an eligible new contribution. Section 7 permits open-source and AI tools provided the team understands and can modify the code.
+`experiment.py` records the fixed protocol: 20 epochs, image size 416, batch 8,
+seed 12092026; learning rate 0.001; validation thresholds 0.15, 0.3 and 0.5.
+The old 40 test clips are not used for model selection or this final evaluation.
 
-It has not been established that all of the September 11 work was the prototype submitted for Round 1. Its eligibility for reuse needs organiser clarification. Follow any stricter instructions delivered at the event.
+## Execution and results
 
-Separating branches does not undo pre-event work or provide organiser approval. Do not present this repository's history as exclusively event-built.
+The Actions workflow “Train new pretrained tyre pose model” installs CPU training
+dependencies, retrieves prepared development clips, trains, selects, generates
+fresh blind clips, scores, and uploads an artifact. On successful completion it
+also commits selected weights and blind evidence under `trained_model/`.
+A successful workflow does not mean that an accuracy target was met.
 
-## Build from here
+New results are pending until that workflow completes. Historical 73.3% precision
+and 64.7% recall belong to the previous model, not this one. Comparisons on
+unequal datasets or different tracking implementations are not a controlled
+architecture comparison.
 
-Develop new implementation during the official event window from the problem requirements and permitted general references. Record changes and evidence in EVENT_WORK.md. Keep the earlier implementation, weights, results and UI out of this branch unless the organisers explicitly permit their reuse and the disclosure is updated.
+For a local run with Python 3.12, FFmpeg and the prepared development folder:
 
-Reformatting, renaming, translating, or asking an AI to paraphrase the old code does not establish an independent new implementation.
+```bash
+python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+python -m pip install 'ultralytics>=8.4,<9' scipy pillow
+python test_experiment.py
+python experiment.py prepare --data data/development
+python experiment.py train
+python experiment.py select --data data/development
+python experiment.py test
+```
 
-The official event window in the FAQ is 12 September 12:30 PM to 13 September 12:00 PM local event time; confirm the actual start, deadline and any amendments with organisers.
+Use a fresh `experiment_out` directory per experiment. Installed dependency
+versions, initial pretrained checkpoint hash and selected checkpoint hash are
+saved. Exact reproduction may depend on hardware and dependency versions.
+The workflow's prepared-data recovery depends on an existing artifact until
+11 October 2026; retain the dataset for longer-term reproduction.
 
-## Organiser clarification to ask in the event group
+## Limits and attribution
 
-We developed a VMAX prototype and trained weights before the event, and initially imported them into this repository. We have now separated them as disclosed prior work and removed them from the active implementation branch without rewriting history. May we use the earlier prototype only as conceptual reference, and are its prepared synthetic datasets allowed? If incremental reuse is permitted, which components may be retained and how should we document the work judged during the event?
+This is still a stylized same-corner/assets synthetic experiment using exact
+camera calibration and a rectangular planar tyre model. It does not establish
+real F1 accuracy, driver identity, calibrated offence probabilities or operational
+readiness. Detector scores are not probabilities of guilt.
 
-No organiser confirmation has been recorded. This question has not been sent automatically.
+Ultralytics is an external open-source dependency with its own licensing terms
+(AGPL-3.0 or an applicable commercial licence). Its implementation and pretrained
+weights are not original team work. See official documentation for attribution:
+https://docs.ultralytics.com/tasks/pose/
+https://docs.ultralytics.com/datasets/pose/

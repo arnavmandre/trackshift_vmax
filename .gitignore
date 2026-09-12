@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/
+experiment_out/
+.prepared/
+yolo*.pt
+output/
