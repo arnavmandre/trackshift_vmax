@@ -75,7 +75,7 @@
         const blob = await (await fetch(clip.video_url)).blob();
         urls.set(c.id, URL.createObjectURL(blob));
       }
-      c.remoteVideoUrl = clip.video_url; c.remotePredictionsUrl = clip.predictions_url;
+      c.remoteVideoUrl = clip.video_url; c.remotePredictionsUrl = clip.predictions_url; c.remoteClipId = clip.id;
 
       if (!analysed(c)) {
         choose(c.id);
