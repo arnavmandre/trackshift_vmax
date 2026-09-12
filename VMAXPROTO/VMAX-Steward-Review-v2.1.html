@@ -498,6 +498,9 @@ function draw(){
  // Confidence itself is shown only once per clip (the queue's mean score) to
  // avoid two differently-scoped "confidence" numbers on screen at once.
  if(!hasVideo())return;
+ // "Tyre overlay" off hides the model's tyre points during playback. The
+ // measure/edit path above still draws, since those tools need the points.
+ if(!$('tyreOverlay').checked)return;
  const live=liveCars(ev()?.original,video.currentTime);
  if(!live.length)return;
  const vr=videoRect(),sx=vr.width/video.videoWidth,sy=vr.height/video.videoHeight,ox=vr.left-r.left,oy=vr.top-r.top,pt=p=>[ox+p[0]*sx,oy+p[1]*sy];
@@ -638,7 +641,8 @@ $('play').onclick=()=>{if(!hasVideo())return;if(video.paused)video.play().catch(
 $('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);$('seek').oninput=e=>seek(Number(e.target.value));
 $('speed').oninput=e=>{const s=Number(e.target.value);state.preferences.speed=s;video.playbackRate=s;$('speedLabel').textContent=s.toFixed(1)+'×';persist();};
 $('fps').onchange=()=>{const c=current(),v=Number($('fps').value);if(!Number.isFinite(v)||v<1||v>240){$('fps').value=c?.fps||25;toast('Enter a frame rate from 1 to 240.');return;}if(c)c.fps=v;persist();update();};
-for(const id of ['tyreOverlay','boundary'])$(id).onchange=()=>{state.preferences[id]=$(id).checked;persist();toast(id==='tyreOverlay'?'Preference saved. Tyre overlays need model output.':'Preference saved. A calibrated boundary is not available yet.');};
+$('tyreOverlay').onchange=()=>{state.preferences.tyreOverlay=$('tyreOverlay').checked;persist();draw();};
+$('boundary').onchange=()=>{state.preferences.boundary=$('boundary').checked;persist();toast('Preference saved. A calibrated boundary is not available yet.');};
 $('timeline').onclick=e=>{if(hasVideo()){const r=e.currentTarget.getBoundingClientRect();seek((e.clientX-r.left)/r.width*video.duration);}};
 $('selectCrop').onclick=()=>{cropMode=!cropMode;video.pause();update();};$('clearCrop').onclick=()=>{if(current())current().crop=null;persist();update();};
 $('stage').addEventListener('pointerdown',e=>{if(!cropMode||!hasVideo())return;const p=point(e);dragStart={crop:true,x:p.x,y:p.y};$('stage').setPointerCapture(e.pointerId);$('cropHint').hidden=true;});
