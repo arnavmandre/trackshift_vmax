@@ -168,3 +168,26 @@ in the current browser; export them before changing computers or clearing storag
 No higher accuracy is claimed until the new blind results are available. Scores
 remain uncalibrated and real-footage inference, driver naming, telemetry fusion,
 and moving-camera calibration remain outstanding; see REQUIREMENTS_STATUS.md.
+# Lightweight visual previews
+
+The CPU dataset renderer supports opt-in `--appearance enhanced`: world-space
+asphalt/grass/paint variation, a rubber-darkened track band, a sky gradient and
+approximate soft car contact shadows. Surface detail fades below pixel size to
+reduce aliasing. These effects change RGB only, preserving depth and labels.
+Classic appearance remains the default for the existing experiment protocol.
+The appearance choice is recorded in each dataset's generator metadata.
+This is still a stylized renderer: car geometry, suspension and lighting remain
+simplified; it does not implement physical motion blur or photorealistic materials.
+
+Generate six reproducible before/after stills (three boundary cases, two camera
+heights) without FFmpeg, training or a full dataset:
+
+```powershell
+.venv/Scripts/python.exe -m simulator.preview --out C:/Users/arnav/trackshift_runs/visual_preview_v1
+```
+
+Open `comparison.jpg` in that directory. The preview also records exact point
+margins and cameras in `preview.json`; these cases are visual checks, not a new
+accuracy benchmark. For videos, add `--appearance enhanced` to
+`python -m simulator.generate` using a new output directory. Camera variation and
+boundary controls in the preview do not change the training distribution.

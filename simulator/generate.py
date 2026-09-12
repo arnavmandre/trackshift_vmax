@@ -107,6 +107,9 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng,m
     render_cam['K']=(np.diag([scale,scale,1])@np.asarray(cam['K'])).tolist()
     if not renderer:
         base=g.render(track,render_cam)
+        if spec.get('appearance') == 'enhanced':
+            from .appearance import surface, shadows
+            base, surface_world, surface_valid = surface(base, render_cam)
     video=folder/'original.mp4'
     cmd=[os.environ.get('FFMPEG','ffmpeg'),'-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{width}x{height}','-r',str(spec['fps']),'-i','-','-an','-c:v','libx264','-preset','fast','-crf',str(spec['crf']),'-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
@@ -115,7 +118,8 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng,m
             if renderer:
                 im=renderer.frame(cam,current,[d[i] for d in travel])
             else:
-                im=Image.fromarray(g.render(meshes[i],render_cam,base)[0])
+                frame_base = shadows(base, surface_world, surface_valid, current) if spec.get('appearance') == 'enhanced' else base
+                im=Image.fromarray(g.render(meshes[i],render_cam,frame_base)[0])
                 if scale>1:im=im.resize((width,height),Image.Resampling.LANCZOS)
             im=ImageEnhance.Brightness(im).enhance(spec['brightness'])
             if spec['blur_px']:im=im.filter(ImageFilter.GaussianBlur(spec['blur_px']))
@@ -128,16 +132,20 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng,m
     return video,coverage
 
 
-def generate(destination,count=10,seed=0,fps=24,seconds=3,width=960,height=540,backend='cpu',plan_only=False,angles=6,supersample=2):
+def generate(destination,count=10,seed=0,fps=24,seconds=3,width=960,height=540,backend='cpu',plan_only=False,angles=6,supersample=2,appearance='classic'):
     if supersample not in (1,2,3):raise ValueError('supersample must be 1, 2 or 3')
     if backend!='cpu' and supersample!=1:raise ValueError('supersampling currently requires CPU backend')
+    if appearance not in ('classic','enhanced'):raise ValueError('unknown appearance')
+    if appearance == 'enhanced' and backend != 'cpu':raise ValueError('enhanced appearance requires CPU backend')
     started=time.perf_counter()
     dest=Path(destination)
     if (dest/'manifest.json').exists() or (dest/'sealed'/'labels.json').exists():
         raise ValueError('destination already contains a dataset; choose a new directory')
     dest.mkdir(parents=True,exist_ok=True); (dest/'sealed').mkdir(exist_ok=True)
     specs=make_specs(count,seed,fps,seconds,width,height,angles)
-    for spec in specs:spec['supersample']=supersample
+    for spec in specs:
+        spec['supersample']=supersample
+        spec['appearance']=appearance
     (dest/'sealed'/'scenes.json').write_text(json.dumps(specs,indent=2))
     if plan_only:
         print(f'{count} incidents x {angles} angles reproducible; videos not rendered')
@@ -149,7 +157,7 @@ def generate(destination,count=10,seed=0,fps=24,seconds=3,width=960,height=540,b
         r.WIDTH,r.HEIGHT=width,height;g.W,g.H=width,height
         renderer=r.Renderer()
     track=g.track_mesh() if renderer is None else None
-    manifest={'schema_version':3,'generator':{'width':width,'height':height,'fps':fps,'seconds':seconds,'supersample':supersample,'backend':backend,'kerb_height_m':g.KERB_HEIGHT_M},'dataset_kind':'synthetic_fixed_vmax_corner','seed':seed,'angles':angles,
+    manifest={'schema_version':3,'generator':{'width':width,'height':height,'fps':fps,'seconds':seconds,'supersample':supersample,'backend':backend,'appearance':appearance,'kerb_height_m':g.KERB_HEIGHT_M},'dataset_kind':'synthetic_fixed_vmax_corner','seed':seed,'angles':angles,
               'limitations':['same track and vehicle geometry as development set','not a real-footage benchmark'], 'clips':[]}
     truth={'schema_version':1,'clips':{}}
     for k,spec in enumerate(specs):
@@ -205,6 +213,7 @@ def main(argv=None):
     p.add_argument('--supersample',type=int,choices=[1,2,3],default=2)
     p.add_argument('--angles',type=int,default=6,help='cameras spaced around the 360-degree ring per incident')
     p.add_argument('--backend',choices=['cpu','opengl'],default='cpu');p.add_argument('--plan-only',action='store_true')
-    a=p.parse_args(argv);generate(a.out,a.count,a.seed,a.fps,a.seconds,a.width,a.height,a.backend,a.plan_only,a.angles,a.supersample)
+    p.add_argument('--appearance',choices=['classic','enhanced'],default='classic')
+    a=p.parse_args(argv);generate(a.out,a.count,a.seed,a.fps,a.seconds,a.width,a.height,a.backend,a.plan_only,a.angles,a.supersample,a.appearance)
 
 if __name__=='__main__':main()
