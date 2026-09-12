@@ -115,14 +115,10 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
   </div>
 
   <div id="tab-tools" class="tabpanel" role="tabpanel" aria-labelledby="tabBtn-tools" hidden>
-   <div class="wb-row"><button id="wbImport">Import predictions JSON</button><button id="wbDemo">Load simulated predictions</button><button id="wbManual">Add manual observation</button><button id="wbTemplate">Download format example</button></div>
-   <input id="wbFile" type="file" accept="application/json,.json" hidden>
    <div id="wbStatus" class="wb-status">Open a video to begin. No model connected.</div>
-   <button class="compare" id="compare">Compare with Fast model</button>
-   <details open><summary>Review intervals — manual and imported</summary>
-    <div class="wb-row"><label>Start (s) <input id="wbStart" type="number" min="0" step="0.001"></label><label>End (s) <input id="wbEnd" type="number" min="0" step="0.001"></label><button id="wbStartNow">Start here</button><button id="wbEndNow">End here</button><button id="wbInterval">Add manual interval</button></div>
+   <details open><summary>Candidate windows flagged by the model</summary>
     <div id="wbIntervals" class="wb-list"></div>
-    <p class="wb-help">Imported intervals are preserved. Manual intervals are bookmarks for review, not detected offences. Remove and recreate a manual interval to change its range; undo restores it.</p>
+    <p class="wb-help">These are the model's flagged windows, not detected offences — the steward makes the decision.</p>
    </details>
    <details><summary>Audit trail and integration</summary>
     <p class="wb-help">Export decisions includes imported originals, manual corrections, review time and edit history. Local logs are editable and are not tamper-proof. Keep the JSON export with the original video.</p>
@@ -134,7 +130,6 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
  </aside>
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<dialog id="compareDialog"><h2>Model comparison</h2><p>The comparison panel is ready for model integration. No inference has been run on this video.</p><table><thead><tr><th>Model</th><th>Confidence</th><th>Latency</th></tr></thead><tbody><tr><td>Fast · not connected</td><td>—</td><td>—</td></tr><tr><td>Deep · not connected</td><td>—</td><td>—</td></tr></tbody></table><p class="small">Detector confidence and tyre clearance are separate measurements. Neither is available in this UI-only version.</p><div class="dialog-actions"><button data-close="compareDialog">Close</button></div></dialog>
 <dialog id="helpDialog"><h2>VMAX · Steward Prototype v2.1</h2><p>Built from the "VMAX - Steward Review" Figma frame. This file runs locally without a server, installation, or model.</p><p>Use <b>Review</b> for the day-to-day task: bookmarks, the human decision, notes and export. Use <b>Measure</b> to mark evidence on the current frame — "Measure this frame" walks you through it one click at a time. <b>More tools</b> holds prediction import/export, manual intervals and the audit trail; you won't need it for a normal review.</p><p>Reopen the original video files after a refresh to resume playback. Reviews persist where browser storage is available. Time-based stepping uses your configured FPS and does not guarantee frame-exact navigation for variable-frame-rate video.</p><div class="dialog-actions"><button data-close="helpDialog">Got it</button></div></dialog>
 <dialog id="carDialog"><form id="carForm"><h2>Manual car identification</h2><p>This is your label, not a model identification.</p><label>Car number or label<input id="carInput" maxlength="40" required placeholder="e.g. #22" autocomplete="off"></label><div class="dialog-actions"><button type="button" data-close="carDialog">Cancel</button><button class="primary" type="submit">Use label</button></div></form></dialog>
 <dialog id="removeDialog"><h2>Remove this clip?</h2><p>This removes the clip's saved notes and markers from this browser. The original video file is untouched. Export decisions first if you need to keep the review.</p><div class="dialog-actions"><button data-close="removeDialog">Cancel</button><button class="primary" id="confirmRemove">Remove clip</button></div></dialog>
@@ -639,7 +634,7 @@ $('saveReview').onclick=()=>{
 $('sessionName').onchange=()=>{state.session=$('sessionName').value.trim()||'Session 04';$('sessionName').value=state.session;persist();};
 $('export').onclick=()=>{readDraft();persist();download('vmax-review-v2.json',{...E.copy(state),application_version:'2.1.0',exportedAt:new Date().toISOString(),modelStatus:'no_live_model',notice:'Human review aid. Imported scores are uncalibrated. Simulated evidence is labelled per clip. Image-space point distances are not metric footprint clearance. Original video bytes are not included; local audit is not tamper-proof.'});toast('Review log exported, including saved assessments and drafts.');};
 $('copySummary').onclick=async()=>{try{await navigator.clipboard.writeText(summary());toast('Saved evidence summary copied.');}catch{const t=document.createElement('textarea');t.value=summary();document.body.append(t);t.select();const ok=document.execCommand('copy');t.remove();toast(ok?'Saved evidence summary copied.':'Clipboard unavailable. Export decisions to keep the summary.');}};
-$('compare').onclick=()=>$('compareDialog').showModal();$('help').onclick=()=>$('helpDialog').showModal();for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>$(b.dataset.close).close();
+$('help').onclick=()=>$('helpDialog').showModal();for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>$(b.dataset.close).close();
 $('carSelect').onchange=()=>{if($('carSelect').value==='add'){if(!current()){toast('Open a video before adding a car label.');renderCar();return;}$('carDialog').showModal();$('carInput').focus();}else{if(!current())return;current().car=$('carSelect').value;persist();renderCar();}};
 $('carDialog').addEventListener('close',renderCar);$('carForm').onsubmit=e=>{e.preventDefault();const label=$('carInput').value.trim();if(!label||!current())return;current().car=label;persist();$('carDialog').close();$('carInput').value='';renderCar();};
 function betterVerdictText(prediction) {
@@ -767,13 +762,6 @@ function initOverlay(){
 }
 
 /* more-tools tab */
-$('wbImport').onclick=()=>$('wbFile').click();
-$('wbFile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>20*1024*1024)throw new Error('Prediction JSON exceeds the 20 MB import limit.');importPredictions(JSON.parse(await f.text()));$('wbError').textContent='';}catch(err){error(err);}finally{e.target.value='';}};
-$('wbDemo').onclick=()=>{try{importPredictions(E.demo(metadata()));$('wbError').textContent='';}catch(e){error(e);}};
-$('wbTemplate').onclick=()=>download('vmax-predictions-example-SIMULATED.json',E.demo({name:'example.mp4',width:640,height:360,duration:3}));
-$('wbManual').onclick=()=>{try{metadata();const id='manual-'+(crypto.randomUUID?.()||Date.now());lastClip=activeId;change('add manual observation',v=>v.manual.push({id,time:video.currentTime,car_id:current().car||null,confidence:null,points:{FL:null,FR:null,RL:null,RR:null}}));selection=id;video.pause();mode='inspect';renderMeasure();toast('Manual observation added at the current time. Open Measure to mark it.');}catch(e){error(e);}};
-$('wbStartNow').onclick=()=>$('wbStart').value=(video.currentTime||0).toFixed(3);$('wbEndNow').onclick=()=>$('wbEnd').value=(video.currentTime||0).toFixed(3);
-$('wbInterval').onclick=()=>{try{metadata();const start=Number($('wbStart').value),end=Number($('wbEnd').value);if(!$('wbStart').value||!$('wbEnd').value||!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<start||end>video.duration)throw new Error('Enter start/end within the video, with end ≥ start.');change('add manual interval',v=>v.intervals.push({id:'interval-'+Date.now(),start,end,source:'human'}));$('wbError').textContent='';}catch(e){error(e);}};
 $('wbNext').onclick=()=>{const i=state.clips.findIndex(c=>c.id===activeId),all=state.clips.slice(i+1).concat(state.clips.slice(0,i));const c=all.find(c=>!c.review||c.review.decision==='unreviewed');if(c)choose(c.id);else toast('No other unreviewed clips.');};
 $('wbExportPredictions').onclick=()=>{if(ev()?.original)download('vmax-original-predictions.json',ev().original);else toast('No imported predictions to export.');};
 
