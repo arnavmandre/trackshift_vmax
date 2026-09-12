@@ -46,11 +46,33 @@ def crop_from_points(points_by_key, resolution):
 
 
 def group_detections_by_frame(fast_predictions, fps):
+    """Frame index -> [(car_id, points)] for the detections worth a deep look.
+
+    Car identity comes from the fast model's tracker (exported as car_id). The
+    order of detections within a frame is confidence order and changes between
+    frames, so it is never used as identity. When the export has car identity,
+    only tracked cars are examined: untracked detections are short fragments or
+    duplicate boxes, and cropping them just adds noise. Older exports without
+    car identity fall back to examining every detection.
+    """
+    observations = fast_predictions['observations']
+    labelled = any(o.get('car_id') for o in observations)
     by_frame = defaultdict(list)
-    for obs in fast_predictions['observations']:
+    for obs in observations:
+        if labelled and not obs.get('car_id'):
+            continue
         frame_idx = int(round(obs['time'] * fps))
-        by_frame[frame_idx].append(obs['points'])
+        by_frame[frame_idx].append((obs.get('car_id'), obs['points']))
     return by_frame
+
+
+def verdict(predictions):
+    """Off track if any decided frame says so; on track if some decided and
+    none did; None (inconclusive) if nothing was decided."""
+    decided = [p for p in predictions if p is not None]
+    if any(p is True for p in decided):
+        return True
+    return False if decided else None
 
 
 @torch.no_grad()
@@ -99,34 +121,31 @@ def run(video_path, camera, fast_predictions, checkpoint, device, progress_path=
             detections = by_frame.get(idx, [])
             if detections:
                 image = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-                for car_index, points_by_key in enumerate(detections):
+                for car_id, points_by_key in detections:
                     crop = crop_from_points(points_by_key, camera['resolution'])
                     if crop is None:
-                        per_detection.append({'frame': idx, 'car_index': car_index, 'prediction': None, 'reason': 'no_crop'})
+                        per_detection.append({'frame': idx, 'car_id': car_id, 'prediction': None, 'reason': 'no_crop'})
                         continue
                     result = predict_one_crop(model, processor, image, crop, camera, config, device)
-                    per_detection.append({'frame': idx, 'car_index': car_index, **result})
+                    per_detection.append({'frame': idx, 'car_id': car_id, **result})
             idx += 1
             write_progress(progress_path, 'processing', idx, total_frames or idx)
     finally:
         cap.release()
     if not per_detection:
         raise RuntimeError('No fast-model detections to crop against in this clip')
-    decided = [d for d in per_detection if d['prediction'] is not None]
-    if any(d['prediction'] is True for d in decided):
-        prediction = True
-    elif decided:
-        prediction = False
-    else:
-        prediction = None
     reasons = Counter(d['reason'] for d in per_detection if d.get('reason'))
-    cars_seen = len({d['car_index'] for d in per_detection})
+    cars = sorted({d['car_id'] for d in per_detection if d['car_id']})
+    # A separate verdict per car, so one car's excursion is never attributed to
+    # another. The clip verdict is off track if any car is.
+    per_car = {car: verdict([d['prediction'] for d in per_detection if d['car_id'] == car]) for car in cars}
     return {
-        'prediction': prediction,
-        'cars_seen': cars_seen,
+        'prediction': verdict([d['prediction'] for d in per_detection]),
+        'per_car': per_car,
+        'cars_seen': len(cars),
         'frames_total': idx,
         'detections_total': len(per_detection),
-        'detections_decided': len(decided),
+        'detections_decided': sum(1 for d in per_detection if d['prediction'] is not None),
         'reasons': dict(reasons),
         'per_detection': per_detection,
     }

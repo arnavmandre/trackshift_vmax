@@ -42,10 +42,59 @@ def infer_raw(model, video_path, device):
     return rows
 
 
-def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
-    video_path = BLIND_ROOT / clip_entry['video']
-    raw = infer_raw(model, video_path, device)
-    fps = clip_entry['fps']
+# Tracks shorter than this are brief fragments (a car entering/leaving view, a
+# one-off duplicate box), not a separate car; they get no car label.
+MIN_TRACK_OBSERVATIONS = 3
+
+
+def track_progress(x, y):
+    """Distance along the corner's centreline (metres) for a world position:
+    entry straight (x < 0), 40 m-radius arc, then the exit straight (y > 40)."""
+    if x < 0:
+        return x
+    if y > 40:
+        return 20 * np.pi + (y - 40)
+    return 40 * np.arctan2(x, 40 - y)
+
+
+def build_evidence(raw, calibration_entry, threshold, fps):
+    """Observations and candidate windows for one clip, with stable car identity.
+
+    Car identity comes from the same tracker the blind evaluation uses
+    (experiment.observations), which follows each car across frames. Detection
+    order within a frame is by confidence and can flip between frames, so it
+    must never be used as identity.
+
+    Cars are named by position on track -- "Car 1" is the car furthest ahead --
+    using world coordinates rather than image order. Every camera angle of an
+    incident sees the same world, so the same physical car gets the same name in
+    every clip of that incident.
+    """
+    # Same margin/track logic the blind evaluation itself uses, at the same
+    # selected threshold, so "candidate" here means what it meant in that report.
+    tracks = e.observations(calibration_entry, raw, threshold)
+    cars = [t for t in tracks if len(t) >= MIN_TRACK_OBSERVATIONS]
+    # Compare cars only at frames where they are visible together: each camera
+    # sees a car for a different stretch of the clip, so averaging a car's
+    # progress over its own visible frames would rank cars differently per
+    # camera. A car's lead is its progress relative to the other cars present.
+    by_frame = {}
+    for i, t in enumerate(cars):
+        for ob in t:
+            by_frame.setdefault(ob['frame'], {})[i] = track_progress(*ob['position'])
+    lead = [[] for _ in cars]
+    for present in by_frame.values():
+        if len(present) > 1:
+            mean = np.mean(list(present.values()))
+            for i, s in present.items():
+                lead[i].append(s - mean)
+    order = sorted(range(len(cars)), key=lambda i: (-np.mean(lead[i]) if lead[i] else 0.0, cars[i][0]['frame']))
+    cars = [cars[i] for i in order]
+    label = {id(t): f'Car {i + 1}' for i, t in enumerate(cars)}
+    car_of_detection = {}
+    for track in tracks:
+        for ob in track:
+            car_of_detection[(ob['frame'], tuple(ob['box']))] = label.get(id(track))
 
     observations = []
     for frame in raw:
@@ -55,14 +104,11 @@ def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
             observations.append({
                 'id': f"observation-{frame['frame']}-{j}",
                 'time': round(frame['frame'] / fps, 4),
-                'car_id': None,
+                'car_id': car_of_detection.get((frame['frame'], tuple(d['box']))),
                 'confidence': round(d['score'], 4),
                 'points': points,
             })
 
-    # Same margin/track logic the blind evaluation itself uses, at the same
-    # selected threshold, so "candidate" here means what it meant in that report.
-    tracks = e.observations(clip_entry, raw, threshold)
     candidates = []
     for t_idx, track in enumerate(tracks):
         violated_frames = (f['frame'] for f in track if f['margin_m'] > 0)
@@ -71,7 +117,46 @@ def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
                 'id': f'event-{t_idx}-{g_idx}',
                 'start': round(start_f / fps, 4),
                 'end': round(end_f / fps, 4),
+                'car_id': label.get(id(track)),
             })
+    return observations, candidates
+
+
+def raw_from_prediction(prediction, fps):
+    """Rebuild tracker input from an already-exported prediction file, so car
+    identity can be added to existing exports without re-running the model."""
+    by_frame = {}
+    for ob in prediction['observations']:
+        keypoints = [[*ob['points'][tyre], 1.0] for tyre in TYRE_ORDER]
+        xs, ys = [p[0] for p in keypoints], [p[1] for p in keypoints]
+        by_frame.setdefault(int(round(ob['time'] * fps)), []).append(
+            {'score': ob['confidence'], 'box': [min(xs), min(ys), max(xs), max(ys)], 'keypoints': keypoints})
+    frames = range(int(round(prediction['video']['duration'] * fps)))
+    return [{'frame': i, 'detections': by_frame.get(i, [])} for i in frames]
+
+
+def relabel_export_dir(directory, threshold):
+    """Add car identity to every prediction file in an existing export folder."""
+    directory = Path(directory)
+    manifest = json.loads((directory / 'clips_manifest.json').read_text())
+    for clip in manifest['clips']:
+        path = directory / f"{clip['id']}.json"
+        prediction = json.loads(path.read_text())
+        camera = json.loads((directory / f"{clip['id']}.camera.json").read_text())
+        entry = {'calibration': {'homography': camera['ground_plane_homography']}}
+        observations, candidates = build_evidence(raw_from_prediction(prediction, clip['fps']), entry, threshold, clip['fps'])
+        before = len(prediction['candidates'])
+        prediction['observations'], prediction['candidates'] = observations, candidates
+        path.write_text(json.dumps(prediction, indent=2))
+        cars = sorted({o['car_id'] for o in observations if o['car_id']})
+        print(f"{clip['name']}: cars={cars} candidates {before}->{len(candidates)}", flush=True)
+
+
+def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
+    video_path = BLIND_ROOT / clip_entry['video']
+    raw = infer_raw(model, video_path, device)
+    fps = clip_entry['fps']
+    observations, candidates = build_evidence(raw, clip_entry, threshold, fps)
 
     # "fast model": our YOLO26n-pose CNN, to distinguish it later from the
     # transformer model planned as a low-confidence fallback (see the
@@ -94,6 +179,17 @@ def export_clip(model, device, clip_entry, threshold, out_dir, display_name):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--relabel', metavar='DIR',
+                        help='add car identity to an existing export folder instead of exporting')
+    parser.add_argument('--threshold', type=float, default=0.5,
+                        help='detection threshold for --relabel (the selected operating threshold)')
+    cli = parser.parse_args()
+    if cli.relabel:
+        relabel_export_dir(cli.relabel, cli.threshold)
+        sys.exit(0)
+
     manifest = json.loads((BLIND_ROOT / 'manifest.json').read_text())
     selection = json.loads(SELECTION.read_text())
     if e.digest(WEIGHTS) != selection['weights_sha256']:

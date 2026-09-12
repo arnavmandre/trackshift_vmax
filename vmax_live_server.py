@@ -48,6 +48,9 @@ def needs_deep_model(data_dir, clip_id):
 
 
 def run_better_model(data_dir, clip_id):
+    # The bridge runs with the deep model's folder as its working directory, so
+    # every path handed to it must be absolute.
+    data_dir = Path(data_dir).resolve()
     camera_json = data_dir / f'{clip_id}.camera.json'
     video = data_dir / f'{clip_id}.mp4'
     fast_predictions = data_dir / f'{clip_id}.json'

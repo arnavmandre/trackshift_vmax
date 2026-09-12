@@ -85,6 +85,17 @@
         if (!hasVideo()) await new Promise(res => video.addEventListener('loadeddata', res, { once: true }));
         const predictions = await (await fetch(clip.predictions_url)).json();
         window.VMAX.importPredictions(E.validate(predictions));
+      } else if (!clip.playback_only) {
+        // Predictions saved in this browser can be stale (for example, from
+        // before car identity was added). The prototype's importer refuses to
+        // replace an original set, so refresh it here from the server -- the
+        // source of truth -- and record that in the audit trail.
+        const predictions = E.validate(await (await fetch(clip.predictions_url)).json());
+        const stored = c.evidence.original;
+        if (JSON.stringify([stored.observations, stored.candidates]) !== JSON.stringify([predictions.observations, predictions.candidates])) {
+          c.evidence.original = predictions;
+          c.evidence.audit.push({ at: new Date().toISOString(), action: 'refresh predictions from server', source: predictions.source, model_version: predictions.model_version });
+        }
       }
       // Clips the server auto-escalated (low confidence score) already have a
       // deep-model result waiting; attach it so the badge is right on arrival

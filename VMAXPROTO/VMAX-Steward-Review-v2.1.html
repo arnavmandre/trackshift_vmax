@@ -304,7 +304,7 @@ function list(){
   // overlay's per-frame OFF TRACK / INSIDE readout: any candidate window
   // anywhere in the clip means the model flagged it off track at some point.
   const verdict=document.createElement('div');verdict.className='clip-verdict';
-  if(analysed(c)){const off=c.evidence.original.candidates.length>0;verdict.textContent=off?'OFF TRACK':'IN TRACK';verdict.style.color=off?'#d99e47':'#7df5c1';}
+  if(analysed(c)){const off=c.evidence.original.candidates.length>0,who=fastOffTrackCars(c);verdict.textContent=off?'OFF TRACK'+(who.length?' · '+who.join(', '):''):'IN TRACK';verdict.style.color=off?'#d99e47':'#7df5c1';}
   else{verdict.textContent='';}
   verdict.style.cssText+='font-size:11px;font-weight:600;margin-top:2px';
   const meta=document.createElement('div');meta.className='clip-meta';const ms=meanScore(c);
@@ -498,12 +498,35 @@ function draw(){
  // Confidence itself is shown only once per clip (the queue's mean score) to
  // avoid two differently-scoped "confidence" numbers on screen at once.
  if(!hasVideo())return;
- const live=E.nearest(ev()?.original,video.currentTime);
- if(!live)return;
+ const live=liveCars(ev()?.original,video.currentTime);
+ if(!live.length)return;
  const vr=videoRect(),sx=vr.width/video.videoWidth,sy=vr.height/video.videoHeight,ox=vr.left-r.left,oy=vr.top-r.top,pt=p=>[ox+p[0]*sx,oy+p[1]*sy];
- g.strokeStyle='#7df5c1';g.fillStyle='#7df5c1';g.font='bold 12px Arial';
- for(const k of E.tyres){const p=live.points[k];if(!p)continue;const [x,y]=pt(p);g.beginPath();g.arc(x,y,6,0,7);g.stroke();g.fillText(k,x+9,y-7);}
+ for(const obs of live){
+  const colour=carColour(obs.car_id);g.strokeStyle=colour;g.fillStyle=colour;g.font='bold 12px Arial';
+  let top=null;
+  for(const k of E.tyres){const p=obs.points[k];if(!p)continue;const [x,y]=pt(p);g.beginPath();g.arc(x,y,6,0,7);g.stroke();g.fillText(k,x+9,y-7);if(!top||y<top[1])top=[x,y];}
+  if(obs.car_id&&top){g.font='bold 13px Arial';g.fillText(obs.car_id,top[0]-18,top[1]-22);}
+ }
 }
+// Every tracked car at the current frame, not just one. The prototype's
+// E.nearest() returns a single observation, so with two cars on screen it drew
+// whichever was listed first (the higher-confidence one), which changes from
+// frame to frame and made the tyre points jump between cars. Same 0.05 s,
+// never-interpolate rule as E.nearest().
+const CAR_COLOURS=['#7df5c1','#58b6ff','#ffb454','#e58cff'];
+function carColour(car){const n=Number(/\d+/.exec(car||'')?.[0]);return n?CAR_COLOURS[(n-1)%CAR_COLOURS.length]:'#7df5c1';}
+function liveCars(data,t){
+ if(!data?.observations?.length)return [];
+ let best=Infinity;for(const o of data.observations)best=Math.min(best,Math.abs(o.time-t));
+ if(best>0.05+1e-8)return [];
+ const atFrame=data.observations.filter(o=>Math.abs(o.time-t)<=best+1e-6);
+ // Untracked detections are short fragments or duplicate boxes; only fall
+ // back to them for older exports that carry no car identity at all.
+ const tracked=atFrame.filter(o=>o.car_id);
+ return data.observations.some(o=>o.car_id)?tracked:atFrame.slice(0,1);
+}
+// Cars the fast model flagged as off track, by name.
+function fastOffTrackCars(c){return [...new Set((c?.evidence?.original?.candidates||[]).map(x=>x.car_id).filter(Boolean))].sort();}
 
 /* ---------- 7. Guided measuring flow ---------- */
 const GUIDED_ORDER=['FL','FR','RL','RR','boundary','side'];
@@ -690,14 +713,18 @@ async function pollBetterModel(clipId) {
 // results exist without this browser ever having asked for them. Pick those up
 // rather than reporting "Fast model only" for work that is already done.
 async function refreshBetterModel(c) {
- if (!c?.remoteClipId || c.betterModel) return false;
+ // Always ask the server: a result saved in this browser's storage can be
+ // stale (e.g. computed before per-car identity existed), and the server's
+ // cached result is the source of truth.
+ if (!c?.remoteClipId) return false;
  try {
   const status = await (await fetch(`/api/better/${c.remoteClipId}`)).json();
   if (status.status === 'done' && status.result && !status.result.error) {
+   const changed = JSON.stringify(c.betterModel) !== JSON.stringify(status.result);
    c.betterModel = status.result;
-   return true;
+   return changed;
   }
- } catch { /* offline or not yet computed -- badge just stays fast-model-only */ }
+ } catch { /* offline or not yet computed -- keep whatever is already shown */ }
  return false;
 }
 // The model's clip-level verdict vs. the fast model's existing OFF/IN TRACK
@@ -716,6 +743,26 @@ function renderBetterModelBadge(c) {
  if (!c?.betterModel) {
   el.textContent = 'Processed by: Fast model only';
   el.style.color = 'var(--muted)';
+  return;
+ }
+ // With car identity, compare the two models car by car, so agreement means
+ // they blamed the same car -- not merely that both saw some excursion.
+ const perCar = c.betterModel.per_car;
+ if (perCar && Object.keys(perCar).length) {
+  const flagged = new Set(fastOffTrackCars(c));
+  const cars = Object.keys(perCar).sort();
+  const unsure = cars.filter(car => perCar[car] === null);
+  const differ = cars.filter(car => perCar[car] !== null && perCar[car] !== flagged.has(car));
+  if (differ.length) {
+   el.textContent = `Processed by: Fast + Deep models — disagree on ${differ.join(', ')}, low confidence`;
+   el.style.color = '#ffbd69';
+  } else if (unsure.length) {
+   el.textContent = `Processed by: Fast + Deep models — deep model inconclusive for ${unsure.join(', ')}, low confidence`;
+   el.style.color = '#ffbd69';
+  } else {
+   el.textContent = 'Processed by: Fast + Deep models — agree on every car, high confidence';
+   el.style.color = '#7df5c1';
+  }
   return;
  }
  const fastOff = c.evidence.original.candidates.length > 0;
@@ -754,10 +801,13 @@ async function runBetterModelForCurrentClip() {
  }
  c.betterModel = status.result;
  $('betterModelResult').hidden = false;
- $('betterModelVerdict').textContent = 'Deep model: ' + betterVerdictText(status.result.prediction);
+ const perCar = status.result.per_car;
+ $('betterModelVerdict').textContent = 'Deep model: ' + (perCar && Object.keys(perCar).length
+  ? Object.keys(perCar).sort().map(car => `${car} ${betterVerdictText(perCar[car])}`).join(' · ')
+  : betterVerdictText(status.result.prediction));
  $('betterModelDetail').textContent =
   `${status.result.detections_decided} / ${status.result.detections_total} detections reached a decision` +
-  (status.result.cars_seen > 1 ? ` · ${status.result.cars_seen} cars seen in this clip` : '') + '.';
+  (status.result.cars_seen > 1 ? ` · ${status.result.cars_seen} cars` : '') + '.';
  renderBetterModelBadge(c);
  if(activeId===c.id)$('modelLabel').textContent=`Fast: connected · Deep: ${c.betterModel?'connected':'offline'}`;
  list();

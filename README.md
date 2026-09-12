@@ -138,6 +138,32 @@ The fast and deep results are **not directly comparable**:
 - **Different handling of uncertainty.** The deep model can abstain, and each
   abstention counts against it. The fast model always commits to a decision.
 
+### Scenes with two cars
+
+The fast model detects two cars reliably. On two-car blind clips it misses a car
+that is in view in about 2% of frames. In most frames where a car goes
+undetected, it has simply left the camera's view. Its tracker keeps the cars
+apart with no identity swaps.
+
+Each car gets a stable name:
+
+- **Named by position on track.** Car 1 is the car further ahead. Cars are
+  named by where they are on track, not by the order the detector lists them,
+  which changes from frame to frame.
+- **Same name in every angle.** All camera angles share the same world
+  coordinates, so a car has the same name in every angle of an incident. On the
+  blind set, all 14 two-car incidents keep consistent names across their angles,
+  checked against ground truth.
+- **Judged per car.** The deep model gives a separate verdict for each car, and
+  the two models are compared car by car. "Agree" means they flagged the same
+  car, not just that both saw an excursion somewhere.
+
+To add car names to an existing export folder without re-running the model:
+
+```bash
+.venv/Scripts/python.exe vmax_export.py --relabel final_demo
+```
+
 ## The steward UI
 
 The server (`vmax_live_server.py`) serves `VMAXPROTO/VMAX-Steward-Review-v2.1.html`
@@ -151,7 +177,9 @@ results.
   model's `IN TRACK` / `OFF TRACK` verdict, its confidence score and its candidate
   windows. After the steward records a decision, the clip gets a **red** border
   (off track) or a **green** border (on track).
-- **Player.** Detected tyre points (FL/FR/RL/RR) are drawn on the video as it plays.
+- **Player.** Detected tyre points (FL/FR/RL/RR) are drawn on the video as it
+  plays. When there are two cars, each is drawn in its own colour and labelled
+  Car 1 or Car 2, and verdicts name the car (for example `OFF TRACK · Car 2`).
 - **Model status.** The header shows `Fast: connected · Deep: connected/offline`
   for the current clip. The line below the clip title says which models processed
   it and, where both did, whether they agree.
@@ -241,7 +269,7 @@ checkpoint still won selection.
 ### Tests
 
 ```bash
-.venv/Scripts/python.exe -m unittest discover        # 28 tests: geometry, rendering, experiment, cascade, server
+.venv/Scripts/python.exe -m unittest discover        # 33 tests: geometry, rendering, experiment, cascade, car identity, server
 cd vmax_model2/Track_limit_detection
 .venv_bench/Scripts/python.exe -m unittest tests.test_vmax_bridge   # 2 tests, runs real inference
 ```
