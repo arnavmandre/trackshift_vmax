@@ -11,16 +11,82 @@ Everything here is **synthetic**: a custom simulator renders one corner with
 exactly known cameras. Nothing in this repository has been tested on real race
 footage. See [Limits](#limits).
 
-## Quick start
+## Install and run
 
-On Windows, double-click **`start_demo.bat`**. It starts the server if it isn't
-already running and opens http://127.0.0.1:8010.
+Commands below are for Windows (PowerShell or Git Bash). On macOS/Linux, use
+`.venv/bin/python` instead of `.venv/Scripts/python.exe`.
 
-Or run it directly:
+### 1. Get the code
+
+The deep model's checkpoint (128 MB) is stored with **Git LFS**. Install LFS
+*before* cloning, or you get a small placeholder file instead of the model.
 
 ```bash
-.venv/Scripts/python.exe vmax_live_server.py      # then open http://127.0.0.1:8010
+git lfs install
+git clone https://github.com/arnavmandre/trackshift_vmax
+cd trackshift_vmax
 ```
+
+Already cloned without LFS? Run `git lfs pull`.
+
+### 2. Run the steward demo (Python only)
+
+The review server uses only the Python standard library. Any Python 3.12+ works,
+with no packages, GPU or model weights:
+
+```bash
+python vmax_live_server.py
+```
+
+Open **http://127.0.0.1:8010**. It loads the 16 bundled clips in `final_demo/`
+(4 incidents × 4 camera angles) with the saved fast-model predictions and cached
+deep-model results, so the whole review flow works right away. On Windows you can
+also double-click **`start_demo.bat`**. It uses `.venv`, so create that first (step 3).
+
+Options: `--port 8010`, `--data <folder>` (defaults to `final_demo/`).
+
+### 3. Install the fast model (YOLO26n-pose)
+
+Needed to run the fast model again, export new clips, or run the tests. Tested
+with Python 3.12, torch 2.14 (CUDA 13.0), ultralytics 8.4, numpy 2.5 and
+opencv 5.0.
+
+```bash
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+.venv/Scripts/python.exe -m pip install ultralytics numpy scipy opencv-python pillow
+```
+
+Without an NVIDIA GPU, leave out `--index-url` to get the CPU build (slower).
+FFmpeg must be on `PATH`, or set the `FFMPEG` environment variable.
+
+### 4. Install the deep model (Mask2Former / Swin-Tiny)
+
+Needed for the **Run on deep model** button and for automatically escalating
+clips below 80% confidence score. This model needs **its own environment**,
+because it uses a different PyTorch version. Never install it into `.venv`.
+Tested with Python 3.12, torch 2.11 (CUDA 12.8) and transformers 4.57.6.
+
+```bash
+cd vmax_model2/Track_limit_detection
+python -m venv .venv_bench
+.venv_bench/Scripts/python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+.venv_bench/Scripts/python.exe -m pip install -r requirements.txt
+cd ../..
+```
+
+The server finds this environment on its own. If it is missing, the demo still
+runs and uses the cached deep-model results. A GPU is strongly recommended.
+
+### 5. Check the install
+
+```bash
+.venv/Scripts/python.exe -m unittest discover
+cd vmax_model2/Track_limit_detection
+.venv_bench/Scripts/python.exe -m unittest tests.test_vmax_bridge
+```
+
+The second command runs real deep-model inference.
 
 The bundled **`final_demo/`** folder has everything playback needs: 16 clips (4
 incidents × 4 camera angles), their camera calibration, saved fast-model
