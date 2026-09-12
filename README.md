@@ -8,7 +8,7 @@ are not used in this implementation. This is a new training experiment, not a
 claim to have invented YOLO or its pretrained backbone.
 
 
-## Changes from the earlier experiment
+## What we do 
 
 - Transfer learning from an official pretrained pose model.
 - A new dataset converter for four ordered tyre contacts.
