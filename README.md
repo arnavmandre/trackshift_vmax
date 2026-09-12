@@ -280,5 +280,3 @@ review console. It still works, but the demo above supersedes it.
 - The **deep model** builds on Hugging Face `transformers` and the pretrained
   `facebook/mask2former-swin-tiny-coco-instance` checkpoint. Its heatmap head and
   training are this project's own work.
-
-Neither backbone is original team work.
