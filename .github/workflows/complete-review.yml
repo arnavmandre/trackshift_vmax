@@ -1,0 +1,88 @@
+name: Steward console and training handoff
+on:
+  push:
+    paths: ['review_server.py', 'steward_ui/**', 'test_review*', 'review_fixture.py', '.github/workflows/complete-review.yml']
+  workflow_run:
+    workflows: ['Train new pretrained tyre pose model']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      training_run:
+        description: Completed training run ID to recover
+        default: '34683394778'
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - run: python -m unittest test_review -v
+      - run: node --check steward_ui/app.js
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node test_review_browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: steward-console-browser-check
+          path: review-ui-check.png
+  attach_results:
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@v4
+        with:
+          name: new-tyre-pose-model-and-blind-evaluation
+          run-id: ${{ github.event.workflow_run.id || inputs.training_run }}
+          github-token: ${{ github.token }}
+          path: recovered
+      - name: Verify and attach completed evidence
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,shutil
+          root=pathlib.Path('recovered');selection=json.loads((root/'selection.json').read_text())
+          sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+          receipt=json.loads((root/'blind_predictions.json.receipt.json').read_text())
+          assert sha(root/'selected.pt')==selection['weights_sha256']==receipt['weights_sha256']
+          assert sha(root/'blind_predictions.json')==receipt['predictions_sha256']
+          assert sha(root/'fresh_blind/manifest.json')==receipt['manifest_sha256']
+          evaluation=json.loads((root/'blind_metrics/evaluation.json').read_text())
+          assert evaluation['summary']['prediction_sha256']==receipt['predictions_sha256']
+          dst=pathlib.Path('trained_model');dst.mkdir(exist_ok=True)
+          for name in ['selected.pt','selection.json','protocol.json','dataset_provenance.json','initialization.json','environment.txt','blind_predictions.json','blind_predictions.json.receipt.json']:
+              shutil.copy2(root/name,dst/name)
+          for name in ['blind_metrics','fresh_blind']:
+              shutil.copytree(root/name,dst/name,dirs_exist_ok=True)
+          checks={'prediction_sha256':receipt['predictions_sha256'],'review_tracks_sha256':sha(dst/'blind_metrics/review_tracks.json')}
+          (dst/'review_integrity.json').write_text(json.dumps(checks,indent=2))
+          from review_server import Session
+          session=Session(dst).payload()
+          assert len(session['clips'])==evaluation['summary']['clips']
+          assert all(c['analysed'] for c in session['clips'])
+          with open('EVENT_WORK.md','a') as f:
+              f.write('\n## New model connected to steward console\n\nVerified selected checkpoint, prediction and video hashes. Original videos and saved inference geometry are available in the new GUI.\n\n')
+              f.write('Measured synthetic result:\n\n```json\n'+json.dumps(evaluation['summary'],indent=2)+'\n```\n')
+          print(json.dumps(evaluation['summary'],indent=2))
+          PY
+      - name: Preserve GUI changes and save verified model
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add trained_model EVENT_WORK.md
+          git diff --cached --quiet && exit 0
+          git commit -m 'Connect verified pose-model results to the new steward console'
+          git pull --rebase origin main
+          git push origin HEAD:main

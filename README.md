@@ -77,3 +77,32 @@ Ultralytics is an external open-source dependency with its own licensing terms
 weights are not original team work. See official documentation for attribution:
 https://docs.ultralytics.com/tasks/pose/
 https://docs.ultralytics.com/datasets/pose/
+
+## Steward review GUI
+
+Run `py review_server.py` on Windows, or double-click `start_demo.bat`.
+On Linux/macOS use `python3 review_server.py`. Open http://127.0.0.1:8000.
+This player uses only Python's standard library; PyTorch is needed for inference
+and training, not for viewing saved results.
+
+The new interface provides a clip queue, original video, tyre and track-boundary
+overlays, frame stepping, playback speed, tyre crops, clearance timeline,
+per-track detector scores, per-clip mean scores and observed-frame coverage,
+candidate windows, locally saved human decisions/notes and JSON/CSV export.
+Synthetic telemetry sample availability is shown as context, not fused evidence.
+Local video files can be opened for playback; they remain explicitly unanalysed
+and have no predicted score or verdict. Unknown FPS disables frame stepping.
+
+The “Steward console and training handoff” workflow verifies browser operation
+and attaches completed training artifacts automatically. If training completed
+before this workflow was installed, run that workflow manually with training run
+ID 34683394778. The verified review requires `trained_model/review_integrity.json`;
+unverified sidecars are not displayed as model analysis.
+
+Until model output is installed, the GUI shows an honest empty state. It does not
+invent example predictions. Keep the server terminal open. Decisions are stored
+in the current browser; export them before changing computers or clearing storage.
+
+No higher accuracy is claimed until the new blind results are available. Scores
+remain uncalibrated and real-footage inference, driver naming, telemetry fusion,
+and moving-camera calibration remain outstanding; see REQUIREMENTS_STATUS.md.

@@ -118,7 +118,15 @@ def train():
         optimizer='AdamW',lr0=.001,lrf=.05,patience=20,pretrained=True,
         mosaic=.3,close_mosaic=5,mixup=0,fliplr=0,flipud=0,degrees=5,translate=.1,
         scale=.3,perspective=0,hsv_h=.1,hsv_s=.4,hsv_v=.3,amp=False,cache=False,
-        project=str(OUT),name='training',exist_ok=False,plots=False,save=True,verbose=False)
+        project=str(OUT.resolve()),name='training',exist_ok=False,plots=False,save=True,verbose=False)
+    actual=Path(model.trainer.save_dir)
+    expected=OUT/'training'
+    if actual.resolve()!=expected.resolve():
+        expected.mkdir(parents=True,exist_ok=True)
+        shutil.copytree(actual,expected,dirs_exist_ok=True)
+    for name in ('best.pt','last.pt'):
+        if not (expected/'weights'/name).is_file():raise RuntimeError(f'missing trained checkpoint: {name}')
+    save(OUT/'training_output.json',{'actual_save_dir':str(actual),'archived_save_dir':str(expected.resolve())})
     print('TRAINING COMPLETE',flush=True)
 
 

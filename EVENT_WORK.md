@@ -20,3 +20,23 @@ tests transfer learning and full-frame pose training. Improvements are hypothese
 until measured; do not report the old model's results as new results.
 
 Training and fresh blind results: pending workflow completion.
+
+## New steward interface
+
+Added a new original-video review interface, standard-library media server,
+byte-range seeking, tyre and boundary overlays, clearance timeline, car/clip
+scores, human notes/decisions and exports. Local videos are playback-only and
+clearly unanalysed. No old UI source was imported.
+
+Added geometry-aware review-window checks, HTTP byte-range/path tests and a
+Chromium test for original playback, frame seeking, overlays, local-video state,
+and review persistence/export. Browser fixture predictions are artificial test
+inputs only and are not included as demo or benchmark evidence.
+
+Added a training-completion handoff to attach selected weights and verified
+predictions to the console without retraining when repository/UI changes occur.
+Actual validation status is recorded by Actions; model accuracy remains pending.
+
+## Training output-path correction
+
+Run 34683394778 completed 20 epochs but saved checkpoints outside the archived experiment folder. Validation selection failed with FileNotFoundError, and there was no blind result. The checkpoint files were not retained by that run artifact. The new run uses an absolute output path, verifies and normalizes checkpoint locations, and pins the observed Ultralytics version 8.4.149. Training must be repeated; no accuracy improvement is claimed from the failed run.
