@@ -1,0 +1,168 @@
+name: Import verified VMAX model and demo
+on:
+  push:
+    paths: ['.github/workflows/import-vmax.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check empty destination
+        run: test ! -e vmax_vision/model.py
+      - uses: actions/checkout@v4
+        with:
+          repository: arnavmandre/vmax
+          ref: dee38ef9d3c492c4e478c1cd6a3ebb1c22661236
+          path: .upstream
+      - uses: actions/download-artifact@v4
+        with:
+          repository: arnavmandre/vmax
+          run-id: 34606745423
+          name: retrained-model-blind-clips-and-review
+          github-token: ${{ github.token }}
+          path: .artifact
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Import source and verify selected weights
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,shutil,subprocess
+          root=pathlib.Path('.')
+          source=root/'.upstream'
+          files=subprocess.check_output(['git','-C',str(source),'ls-files','-z']).decode().split('\0')
+          for name in filter(None,files):
+              if name.startswith('.github/'):continue
+              dst=root/name
+              dst.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copy2(source/name,dst)
+          artifact=root/'.artifact/retraining_out'
+          selected=artifact/'selected.pt'
+          selection=json.loads((artifact/'selection.json').read_text())
+          digest=hashlib.sha256(selected.read_bytes()).hexdigest()
+          assert digest==selection['weights_sha256'],'selected checkpoint hash mismatch'
+          receipt=json.loads((artifact/'retrained/predictions/receipt.json').read_text())
+          assert digest==receipt['weights_sha256'],'predictions refer to different weights'
+          shutil.copytree(artifact,root/'retraining_out')
+          (root/'models').mkdir(exist_ok=True)
+          shutil.copy2(root/'pipeline_out/vmaxnet.pt',root/'models/original_baseline.pt')
+          shutil.copy2(selected,root/'pipeline_out/vmaxnet.pt')
+          provenance=dict(source_repository='arnavmandre/vmax',source_commit='dee38ef9d3c492c4e478c1cd6a3ebb1c22661236',
+              experiment_commit='38f42c6f82a277802515818a90d4c4aed66a1068',run_id=34606745423,
+              selected_weights_sha256=digest,selected_candidate=selection['selected_stage'],
+              default_weights='pipeline_out/vmaxnet.pt',baseline_weights='models/original_baseline.pt',
+              warning='Experimental synthetic model; 73.3% precision, 64.7% recall; not validated on real F1 footage')
+          (root/'models/provenance.json').write_text(json.dumps(provenance,indent=2))
+          shutil.move(root/'README.md',root/'README_UPSTREAM.md')
+          (root/'README.md').write_text('''# Trackshift VMAX
+
+          Video-based tyre-contact estimation and experimental track-limit review.
+          This repository includes the selected retrained VMAX-Net checkpoint,
+          source code, 40 blind clips, saved predictions and a browser review demo.
+
+          ## Start the demo on Windows
+
+          Download this repository with Code → Download ZIP, extract it, and
+          double-click `start_demo.bat`. Keep the terminal open and visit
+          http://127.0.0.1:8000. Python must be installed; the saved review uses
+          Python standard-library code and does not require PyTorch.
+
+          Or open a terminal in this folder:
+
+          ```powershell
+          py -m vmax_vision.serve --directory retraining_out/steward_review --port 8000
+          ```
+
+          On Linux/macOS use `python3` instead of `py`.
+          The demo displays saved model predictions with original video,
+          overlays, frame stepping and human review controls. Playback does not
+          run the neural network again.
+
+          ## Run the model
+
+          Use Python 3.12 and install inference dependencies:
+
+          ```bash
+          python -m pip install numpy scipy pillow opencv-python-headless
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m vmax_vision.cli blind infer --manifest retraining_out/blind_clips/manifest.json --weights pipeline_out/vmaxnet.pt --out new_run/predictions
+          python -m vmax_vision.cli blind score --manifest retraining_out/blind_clips/manifest.json --runs new_run/predictions --labels retraining_out/blind_clips/sealed/labels.json --out new_run/metrics
+          ```
+
+          Use a fresh output directory for each run. FFmpeg is additionally needed
+          for scene generation. See IMPROVEMENTS.md for other commands.
+
+          ## Model and measured results
+
+          VMAX-Net has 1,563,010 trainable parameters. The default checkpoint is
+          now the selected retrained model at `pipeline_out/vmaxnet.pt`, also
+          retained as `retraining_out/selected.pt`. The earlier checkpoint is
+          `models/original_baseline.pt`. Hashes and origin are in
+          `models/provenance.json`.
+
+          On 40 synthetic blind clips with 17 labelled excursions, the selected
+          model found 11, missed 6 and produced 4 false reports: 73.3% precision,
+          64.7% recall. Median absolute margin error was 0.344 m and P95 was
+          1.247 m on associated observations. Scores are not calibrated incident
+          probabilities. Real-F1 performance remains unmeasured.
+
+          The model is experimental and not suitable for automatic penalties.
+          These evaluated clips are now regression data; further tuning needs
+          another untouched final test set.
+
+          ## Reproducibility
+
+          Read RETRAINING.md, reports/retraining_20260911.json and
+          retraining_out/protocol.json. The complete archived experiment is
+          included, so it does not depend on the original Actions artifact's
+          expiry. To start a new training experiment, use a fresh output location
+          or workspace; the orchestrator refuses to overwrite existing results.
+
+          Source: arnavmandre/vmax at dee38ef9d3c492c4e478c1cd6a3ebb1c22661236.
+          Original experiment: https://github.com/arnavmandre/vmax/actions/runs/34606745423
+          Historical upstream instructions are retained in README_UPSTREAM.md;
+          follow this README for the checkpoint paths in this repository.
+          '''.replace('\n          ','\n'))
+          (root/'start_demo.bat').write_text('@echo off\ncd /d "%~dp0"\necho Open http://127.0.0.1:8000 in your browser. Keep this window open.\npy -m vmax_vision.serve --directory retraining_out/steward_review --port 8000\npause\n')
+          print(json.dumps(provenance,indent=2))
+          PY
+      - run: python -m pip install numpy scipy pillow opencv-python-headless
+      - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Verify checkpoint and reliability
+        run: |
+          python - <<'PY'
+          import torch
+          from vmax_vision.model import VmaxNet
+          model=VmaxNet()
+          blob=torch.load('pipeline_out/vmaxnet.pt',map_location='cpu',weights_only=False)
+          model.load_state_dict(blob['model'],strict=True)
+          n=sum(p.numel() for p in model.parameters())
+          assert n==1563010,n
+          print('Verified selected checkpoint:',n,'parameters')
+          PY
+          python -m unittest discover -s tests -p test_reliability.py -q
+          python -m unittest discover -s tests -p test_runtime.py -q
+      - name: Reproduce blind predictions
+        run: |
+          python -m vmax_vision.cli blind infer --manifest retraining_out/blind_clips/manifest.json --weights pipeline_out/vmaxnet.pt --out /tmp/vmax-check/predictions
+          python -m vmax_vision.cli blind score --manifest retraining_out/blind_clips/manifest.json --runs /tmp/vmax-check/predictions --labels retraining_out/blind_clips/sealed/labels.json --out /tmp/vmax-check/metrics
+          python - <<'PY'
+          import json
+          measured=json.load(open('/tmp/vmax-check/metrics/evaluation.json'))['summary']
+          expected=json.load(open('retraining_out/comparison.json'))['retrained']
+          for k in ['clips','true_positives','false_reports','missed_events']:
+              assert measured[k]==expected[k],(k,measured[k],expected[k])
+          print('Blind event counts reproduced successfully.')
+          PY
+      - name: Save verified model and demo to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- . ':!.upstream' ':!.artifact'
+          git add -f pipeline_out/vmaxnet.pt models retraining_out
+          git commit -m 'Import verified VMAX-Net, selected retrained weights and complete blind review demo'
+          git push origin HEAD:main
