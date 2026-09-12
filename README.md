@@ -30,10 +30,7 @@ fresh blind clips, scores, and uploads an artifact. On successful completion it
 also commits selected weights and blind evidence under `trained_model/`.
 A successful workflow does not mean that an accuracy target was met.
 
-New results are pending until that workflow completes. Historical 73.3% precision
-and 64.7% recall belong to the previous model, not this one. Comparisons on
-unequal datasets or different tracking implementations are not a controlled
-architecture comparison.
+New results are pending until that workflow completes.
 
 For a local run with Python 3.12, FFmpeg and the prepared development folder:
 
