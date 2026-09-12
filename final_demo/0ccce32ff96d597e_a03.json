@@ -13,6 +13,7 @@
       "id": "observation-0-0",
       "time": 0.0,
       "car_id": "Car 1",
+      "clearance_m": -5.192,
       "confidence": 0.8741,
       "points": {
         "FL": [
@@ -37,6 +38,7 @@
       "id": "observation-0-1",
       "time": 0.0,
       "car_id": "Car 2",
+      "clearance_m": -3.459,
       "confidence": 0.8142,
       "points": {
         "FL": [
@@ -61,6 +63,7 @@
       "id": "observation-1-0",
       "time": 0.0833,
       "car_id": "Car 1",
+      "clearance_m": -5.395,
       "confidence": 0.8446,
       "points": {
         "FL": [
@@ -85,6 +88,7 @@
       "id": "observation-1-1",
       "time": 0.0833,
       "car_id": "Car 2",
+      "clearance_m": -3.488,
       "confidence": 0.7959,
       "points": {
         "FL": [
@@ -109,6 +113,7 @@
       "id": "observation-2-0",
       "time": 0.1667,
       "car_id": "Car 1",
+      "clearance_m": -5.092,
       "confidence": 0.8268,
       "points": {
         "FL": [
@@ -133,6 +138,7 @@
       "id": "observation-2-1",
       "time": 0.1667,
       "car_id": "Car 2",
+      "clearance_m": -3.493,
       "confidence": 0.8263,
       "points": {
         "FL": [
@@ -157,6 +163,7 @@
       "id": "observation-3-0",
       "time": 0.25,
       "car_id": "Car 2",
+      "clearance_m": -3.587,
       "confidence": 0.8339,
       "points": {
         "FL": [
@@ -181,6 +188,7 @@
       "id": "observation-3-1",
       "time": 0.25,
       "car_id": "Car 1",
+      "clearance_m": -5.062,
       "confidence": 0.8263,
       "points": {
         "FL": [
@@ -205,6 +213,7 @@
       "id": "observation-4-0",
       "time": 0.3333,
       "car_id": "Car 1",
+      "clearance_m": -5.132,
       "confidence": 0.8495,
       "points": {
         "FL": [
@@ -229,6 +238,7 @@
       "id": "observation-4-1",
       "time": 0.3333,
       "car_id": "Car 2",
+      "clearance_m": -3.393,
       "confidence": 0.838,
       "points": {
         "FL": [
@@ -253,6 +263,7 @@
       "id": "observation-5-0",
       "time": 0.4167,
       "car_id": "Car 1",
+      "clearance_m": -5.217,
       "confidence": 0.8552,
       "points": {
         "FL": [
@@ -277,6 +288,7 @@
       "id": "observation-5-1",
       "time": 0.4167,
       "car_id": "Car 2",
+      "clearance_m": -3.574,
       "confidence": 0.8314,
       "points": {
         "FL": [
@@ -301,6 +313,7 @@
       "id": "observation-6-0",
       "time": 0.5,
       "car_id": "Car 1",
+      "clearance_m": -5.072,
       "confidence": 0.8655,
       "points": {
         "FL": [
@@ -325,6 +338,7 @@
       "id": "observation-6-1",
       "time": 0.5,
       "car_id": "Car 2",
+      "clearance_m": -3.84,
       "confidence": 0.8465,
       "points": {
         "FL": [
@@ -349,6 +363,7 @@
       "id": "observation-7-0",
       "time": 0.5833,
       "car_id": "Car 1",
+      "clearance_m": -5.032,
       "confidence": 0.8697,
       "points": {
         "FL": [
@@ -373,6 +388,7 @@
       "id": "observation-7-1",
       "time": 0.5833,
       "car_id": "Car 2",
+      "clearance_m": -3.911,
       "confidence": 0.8471,
       "points": {
         "FL": [
@@ -397,6 +413,7 @@
       "id": "observation-8-0",
       "time": 0.6667,
       "car_id": "Car 1",
+      "clearance_m": -5.248,
       "confidence": 0.878,
       "points": {
         "FL": [
@@ -421,6 +438,7 @@
       "id": "observation-8-1",
       "time": 0.6667,
       "car_id": "Car 2",
+      "clearance_m": -3.947,
       "confidence": 0.8533,
       "points": {
         "FL": [
@@ -445,6 +463,7 @@
       "id": "observation-8-2",
       "time": 0.6667,
       "car_id": null,
+      "clearance_m": null,
       "confidence": 0.1338,
       "points": {
         "FL": [
@@ -469,6 +488,7 @@
       "id": "observation-9-0",
       "time": 0.75,
       "car_id": "Car 1",
+      "clearance_m": -5.137,
       "confidence": 0.8617,
       "points": {
         "FL": [
@@ -493,6 +513,7 @@
       "id": "observation-9-1",
       "time": 0.75,
       "car_id": "Car 2",
+      "clearance_m": -3.93,
       "confidence": 0.8466,
       "points": {
         "FL": [
@@ -517,6 +538,7 @@
       "id": "observation-9-2",
       "time": 0.75,
       "car_id": null,
+      "clearance_m": null,
       "confidence": 0.1123,
       "points": {
         "FL": [
@@ -541,6 +563,7 @@
       "id": "observation-10-0",
       "time": 0.8333,
       "car_id": "Car 1",
+      "clearance_m": -5.294,
       "confidence": 0.8545,
       "points": {
         "FL": [
@@ -565,6 +588,7 @@
       "id": "observation-10-1",
       "time": 0.8333,
       "car_id": "Car 2",
+      "clearance_m": -4.132,
       "confidence": 0.8446,
       "points": {
         "FL": [
@@ -589,6 +613,7 @@
       "id": "observation-10-2",
       "time": 0.8333,
       "car_id": null,
+      "clearance_m": null,
       "confidence": 0.1273,
       "points": {
         "FL": [
@@ -613,6 +638,7 @@
       "id": "observation-11-0",
       "time": 0.9167,
       "car_id": "Car 1",
+      "clearance_m": -5.157,
       "confidence": 0.8497,
       "points": {
         "FL": [
@@ -637,6 +663,7 @@
       "id": "observation-11-1",
       "time": 0.9167,
       "car_id": "Car 2",
+      "clearance_m": -3.724,
       "confidence": 0.8005,
       "points": {
         "FL": [
@@ -661,6 +688,7 @@
       "id": "observation-12-0",
       "time": 1.0,
       "car_id": "Car 1",
+      "clearance_m": -5.137,
       "confidence": 0.8658,
       "points": {
         "FL": [
@@ -685,6 +713,7 @@
       "id": "observation-12-1",
       "time": 1.0,
       "car_id": "Car 2",
+      "clearance_m": -2.963,
       "confidence": 0.8341,
       "points": {
         "FL": [
@@ -709,6 +738,7 @@
       "id": "observation-13-0",
       "time": 1.0833,
       "car_id": "Car 1",
+      "clearance_m": -5.25,
       "confidence": 0.8402,
       "points": {
         "FL": [
@@ -733,6 +763,7 @@
       "id": "observation-13-1",
       "time": 1.0833,
       "car_id": "Car 2",
+      "clearance_m": -1.997,
       "confidence": 0.7992,
       "points": {
         "FL": [
@@ -757,6 +788,7 @@
       "id": "observation-14-0",
       "time": 1.1667,
       "car_id": "Car 1",
+      "clearance_m": -5.207,
       "confidence": 0.8446,
       "points": {
         "FL": [
@@ -781,6 +813,7 @@
       "id": "observation-14-1",
       "time": 1.1667,
       "car_id": "Car 2",
+      "clearance_m": -0.485,
       "confidence": 0.7702,
       "points": {
         "FL": [
@@ -805,6 +838,7 @@
       "id": "observation-14-2",
       "time": 1.1667,
       "car_id": null,
+      "clearance_m": null,
       "confidence": 0.3102,
       "points": {
         "FL": [
@@ -829,6 +863,7 @@
       "id": "observation-15-0",
       "time": 1.25,
       "car_id": "Car 1",
+      "clearance_m": -5.418,
       "confidence": 0.8633,
       "points": {
         "FL": [
@@ -853,6 +888,7 @@
       "id": "observation-15-1",
       "time": 1.25,
       "car_id": "Car 2",
+      "clearance_m": 1.001,
       "confidence": 0.8509,
       "points": {
         "FL": [
@@ -877,6 +913,7 @@
       "id": "observation-16-0",
       "time": 1.3333,
       "car_id": "Car 2",
+      "clearance_m": -0.14,
       "confidence": 0.9106,
       "points": {
         "FL": [
@@ -901,6 +938,7 @@
       "id": "observation-16-1",
       "time": 1.3333,
       "car_id": "Car 1",
+      "clearance_m": -5.169,
       "confidence": 0.8191,
       "points": {
         "FL": [
@@ -925,6 +963,7 @@
       "id": "observation-17-0",
       "time": 1.4167,
       "car_id": "Car 1",
+      "clearance_m": -5.29,
       "confidence": 0.8632,
       "points": {
         "FL": [
@@ -949,6 +988,7 @@
       "id": "observation-17-1",
       "time": 1.4167,
       "car_id": "Car 2",
+      "clearance_m": -0.883,
       "confidence": 0.8174,
       "points": {
         "FL": [
@@ -973,6 +1013,7 @@
       "id": "observation-18-0",
       "time": 1.5,
       "car_id": "Car 1",
+      "clearance_m": -4.913,
       "confidence": 0.8487,
       "points": {
         "FL": [
@@ -997,6 +1038,7 @@
       "id": "observation-18-1",
       "time": 1.5,
       "car_id": "Car 2",
+      "clearance_m": -1.993,
       "confidence": 0.8371,
       "points": {
         "FL": [
@@ -1021,6 +1063,7 @@
       "id": "observation-19-0",
       "time": 1.5833,
       "car_id": "Car 2",
+      "clearance_m": -3.036,
       "confidence": 0.8222,
       "points": {
         "FL": [
@@ -1045,6 +1088,7 @@
       "id": "observation-19-1",
       "time": 1.5833,
       "car_id": "Car 1",
+      "clearance_m": -4.83,
       "confidence": 0.8169,
       "points": {
         "FL": [
@@ -1069,6 +1113,7 @@
       "id": "observation-20-0",
       "time": 1.6667,
       "car_id": "Car 1",
+      "clearance_m": -5.036,
       "confidence": 0.8773,
       "points": {
         "FL": [
@@ -1093,6 +1138,7 @@
       "id": "observation-20-1",
       "time": 1.6667,
       "car_id": "Car 2",
+      "clearance_m": -3.679,
       "confidence": 0.8363,
       "points": {
         "FL": [
@@ -1117,6 +1163,7 @@
       "id": "observation-21-0",
       "time": 1.75,
       "car_id": "Car 2",
+      "clearance_m": -3.64,
       "confidence": 0.8771,
       "points": {
         "FL": [
@@ -1141,6 +1188,7 @@
       "id": "observation-21-1",
       "time": 1.75,
       "car_id": "Car 1",
+      "clearance_m": -5.096,
       "confidence": 0.8649,
       "points": {
         "FL": [
@@ -1165,6 +1213,7 @@
       "id": "observation-22-0",
       "time": 1.8333,
       "car_id": "Car 2",
+      "clearance_m": -3.518,
       "confidence": 0.8573,
       "points": {
         "FL": [
@@ -1189,6 +1238,7 @@
       "id": "observation-22-1",
       "time": 1.8333,
       "car_id": "Car 1",
+      "clearance_m": -4.958,
       "confidence": 0.8504,
       "points": {
         "FL": [
@@ -1213,6 +1263,7 @@
       "id": "observation-23-0",
       "time": 1.9167,
       "car_id": "Car 1",
+      "clearance_m": -5.044,
       "confidence": 0.866,
       "points": {
         "FL": [
@@ -1237,6 +1288,7 @@
       "id": "observation-23-1",
       "time": 1.9167,
       "car_id": "Car 2",
+      "clearance_m": -3.355,
       "confidence": 0.8426,
       "points": {
         "FL": [

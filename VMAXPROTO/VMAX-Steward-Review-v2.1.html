@@ -63,7 +63,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
   </div>
   <input type="range" class="seek" id="seek" min="0" max="1" step="0.001" value="0" aria-label="Seek video" disabled>
   <div class="stats"><div class="stat"><p>Mean confidence score</p><strong>—</strong></div><div class="stat"><p>Observations with a car</p><strong>—</strong></div><div class="stat"><p>Imported candidate windows</p><strong>—</strong></div></div>
-  <div class="timeline"><div class="timeline-title"><span>Estimated clearance (m)</span><span class="tiny">Awaiting model output</span></div><div class="timeline-chart" id="timeline" aria-label="Timeline; click to seek"><div class="zero-line"></div><span class="zero-label">0</span><div class="plot-empty">No metre-based clearance available in this prototype</div><div id="markerTicks"></div><div class="playhead" id="playhead"></div></div><p class="timeline-foot">This chart is a placeholder; per-frame clearance in metres is not yet implemented.</p></div>
+  <div class="timeline"><div class="timeline-title"><span>Distance to track edge over the clip (m) · above the line = past the edge</span><span class="tiny" id="timelineLegend">Awaiting model output</span></div><div class="timeline-chart" id="timeline" aria-label="Timeline; click to seek"><svg id="clearanceChart" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"></svg><span class="zero-label" id="zeroLabel">track edge</span><div class="plot-empty" id="plotEmpty">No model distances for this clip</div><div id="markerTicks"></div><div class="playhead" id="playhead"></div></div><p class="timeline-foot">From the fast model's tyre points and this camera's calibration. Below the line = inside the track. Click to jump.</p></div>
   <div class="workspace-foot"><label>Stepping FPS <input id="fps" type="number" class="fps-input" min="1" max="240" step="0.001" value="25" title="Set this to the source video frame rate" aria-label="Stepping FPS"> <span> · user-supplied</span></label><span>Review aid · the steward makes the decision</span></div>
  </section>
  <aside class="inspector">
@@ -96,8 +96,8 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
    <div class="model-block">
     <div class="model-head"><span>This observation</span><span class="model-pill" id="obsSourcePill">—</span></div>
     <div class="wb-metrics">
-     <div>Confidence score<strong id="wbConfidence">—</strong><small>Uncalibrated · not offence probability</small></div>
-     <div>Signed pixel distance (original / adjusted)<strong id="wbDistance">— / — px</strong><small>Minimum signed contact-point distance to the drawn boundary</small></div>
+     <div>Model confidence score<strong id="wbConfidence">—</strong><small>How sure the fast model is it found the car · not a verdict</small></div>
+     <div>Distance to track edge<strong id="wbDistance">—</strong><small>Measured in metres from the tyres to the white line</small></div>
     </div>
     <p class="wb-help" id="wbGate">Measure this frame, or pick an existing observation below, to see evidence here.</p>
    </div>
@@ -393,7 +393,58 @@ function update(){
  $('seek').max=Number.isFinite(video.duration)?video.duration:1;$('seek').value=t;
  $('playhead').style.left=(Number.isFinite(video.duration)&&video.duration>0?100*t/video.duration:0)+'%';
  $('cropHint').hidden=!cropMode;$('stage').classList.toggle('cropping',cropMode);$('cropSelection').style.display='none';
- drawCrop();draw();
+ drawCrop();draw();renderLiveEvidence();
+}
+// Plain-language distance from the white line. clearance_m comes from the
+// export (same margin the blind evaluation scores): <= 0 inside the track,
+// > 0 means every tyre is past the edge.
+function clearanceText(m){
+ if(m==null)return '—';
+ if(m>0)return `${m.toFixed(2)} m past the line`;
+ return `${Math.abs(m).toFixed(2)} m inside`;
+}
+// Measure panels follow the playhead: one line per car visible at this frame.
+function renderLiveEvidence(){
+ const data=ev()?.original,cars=hasVideo()?[...liveCars(data,video.currentTime||0)].sort((a,b)=>String(a.car_id).localeCompare(String(b.car_id))):[];
+ const conf=$('wbConfidence'),dist=$('wbDistance');
+ const rows=(el,fn)=>{el.replaceChildren();for(const o of cars){const d=document.createElement('span');d.style.cssText=`display:block;color:${carColour(o.car_id)}`;d.textContent=`${o.car_id||'Car'}: ${fn(o)}`;el.append(d);}};
+ if(!cars.length){conf.textContent='—';dist.textContent='—';}
+ else{
+  rows(conf,o=>o.confidence==null?'—':`${Math.round(o.confidence*100)}%`);
+  rows(dist,o=>clearanceText(o.clearance_m));
+ }
+ const off=cars.filter(o=>o.clearance_m>0).map(o=>o.car_id);
+ $('wbGate').textContent=!hasVideo()?'Open a clip to see evidence here.':!cars.length?'The model has no car at this frame. Step to another frame or measure it yourself.':off.length?`At this frame the model puts ${off.join(' and ')} fully past the white line (all four tyres).`:'At this frame the model has every car with at least one tyre inside the white line.';
+}
+// Per-car distance-to-edge lines for the whole clip, zero = the white line.
+let chartKey=null;
+function renderClearanceChart(){
+ const data=ev()?.original,svg=$('clearanceChart'),dur=video.duration;
+ const obs=(data?.observations||[]).filter(o=>o.car_id&&o.clearance_m!=null);
+ const key=current()?.id+'|'+obs.length+'|'+dur;
+ if(key===chartKey)return;chartKey=key;
+ svg.replaceChildren();
+ const ok=obs.length&&Number.isFinite(dur)&&dur>0;
+ $('plotEmpty').hidden=!!ok;$('zeroLabel').hidden=!ok;
+ if(!ok){$('timelineLegend').textContent='Awaiting model output';return;}
+ const W=1000,H=85,vals=obs.map(o=>o.clearance_m),hi=Math.max(1,...vals),lo=Math.min(-1,...vals),y=v=>4+(hi-v)/(hi-lo)*(H-8);
+ svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+ const ns='http://www.w3.org/2000/svg',add=(tag,attrs)=>{const n=document.createElementNS(ns,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);svg.append(n);return n;};
+ add('rect',{x:0,y:0,width:W,height:y(0),fill:'#d90d1718'});
+ add('line',{x1:0,x2:W,y1:y(0),y2:y(0),stroke:'#f5f5f5',"stroke-dasharray":'6 4',"stroke-width":1,"vector-effect":'non-scaling-stroke'});
+ $('zeroLabel').style.top=Math.max(0,y(0)-13)+'px';
+ const byCar={};for(const o of obs)(byCar[o.car_id]??=[]).push(o);
+ const legend=[];
+ for(const [car,list] of Object.entries(byCar).sort()){
+  list.sort((a,b)=>a.time-b.time);
+  // Break the line where the car leaves view instead of joining across the gap.
+  let d='',prev=null;
+  for(const o of list){d+=`${prev!=null&&o.time-prev>0.2?'M':d?'L':'M'}${(o.time/dur*W).toFixed(1)},${y(o.clearance_m).toFixed(1)} `;prev=o.time;}
+  add('path',{d,fill:'none',stroke:carColour(car),"stroke-width":2,"vector-effect":'non-scaling-stroke'});
+  const worst=Math.max(...list.map(o=>o.clearance_m));
+  legend.push(`${car}: ${worst>0?'past the line at some point':'always inside'}`);
+ }
+ $('timelineLegend').textContent=legend.join(' · ');
 }
 function seek(t){if(!hasVideo())return;video.pause();video.currentTime=Math.max(0,Math.min(Math.max(0,video.duration-.001),t));}
 function step(d){if(!hasVideo())return;seek(video.currentTime+d/(current().fps||25));}
@@ -458,10 +509,8 @@ function renderMeasure(){
  $('modelLabel').textContent=`Fast: ${source==='model'?'connected':'offline'} · Deep: ${current()?.betterModel?'connected':'offline'}`;
  $('stageFoot').textContent=sim?'SIMULATED OVERLAY — not measured':source?'Imported overlay · not independently verified':'Local playback · no model results';
  $('obsSourcePill').textContent=o?(o.id.startsWith('manual-')||o.id.startsWith('demo-')&&false?'Manual':(sim?'Simulated':source==='model'?'Imported':'Manual')):'—';
- $('wbConfidence').textContent=o?.confidence==null?'—':`${(o.confidence*100).toFixed(1)}%${sim?' DEMO':''}`;
- const e=o?effective(o):null,a=E.clearance(o?.points,e?.line,e?.flags),b=E.clearance(e?.points,e?.line,e?.flags),fmt=v=>v.value==null?'—':v.value.toFixed(1);
- $('wbDistance').textContent=`${fmt(a)} / ${fmt(b)} px`;
- $('wbGate').textContent=o?b.reason:'Measure this frame, or pick an existing observation above, to see evidence here.';
+ const e=o?effective(o):null;
+ renderLiveEvidence();renderClearanceChart();
  for(const q of $('wbFlags').querySelectorAll('input'))q.checked=e?.flags.includes(q.value)||false;
  $('wbUndo').disabled=!hist()?.undoStack.length;$('wbRedo').disabled=!hist()?.redoStack.length;
  for(const id of ['wbEdit','wbLine','wbFlip','wbMissing','wbJump'])$(id).disabled=!o||!!guided;

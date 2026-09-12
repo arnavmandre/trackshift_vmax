@@ -13,6 +13,7 @@
       "id": "observation-0-0",
       "time": 0.0,
       "car_id": "Car 1",
+      "clearance_m": -2.208,
       "confidence": 0.9562,
       "points": {
         "FL": [
@@ -37,6 +38,7 @@
       "id": "observation-1-0",
       "time": 0.0833,
       "car_id": "Car 1",
+      "clearance_m": -2.099,
       "confidence": 0.9329,
       "points": {
         "FL": [
@@ -61,6 +63,7 @@
       "id": "observation-2-0",
       "time": 0.1667,
       "car_id": "Car 1",
+      "clearance_m": -1.854,
       "confidence": 0.9544,
       "points": {
         "FL": [
@@ -85,6 +88,7 @@
       "id": "observation-3-0",
       "time": 0.25,
       "car_id": "Car 1",
+      "clearance_m": -1.484,
       "confidence": 0.932,
       "points": {
         "FL": [
@@ -109,6 +113,7 @@
       "id": "observation-4-0",
       "time": 0.3333,
       "car_id": "Car 1",
+      "clearance_m": -1.031,
       "confidence": 0.8914,
       "points": {
         "FL": [
@@ -133,6 +138,7 @@
       "id": "observation-5-0",
       "time": 0.4167,
       "car_id": "Car 1",
+      "clearance_m": -0.551,
       "confidence": 0.815,
       "points": {
         "FL": [
@@ -157,6 +163,7 @@
       "id": "observation-6-0",
       "time": 0.5,
       "car_id": "Car 1",
+      "clearance_m": -0.164,
       "confidence": 0.864,
       "points": {
         "FL": [
@@ -181,6 +188,7 @@
       "id": "observation-7-0",
       "time": 0.5833,
       "car_id": "Car 1",
+      "clearance_m": 0.118,
       "confidence": 0.8739,
       "points": {
         "FL": [
@@ -205,6 +213,7 @@
       "id": "observation-8-0",
       "time": 0.6667,
       "car_id": "Car 1",
+      "clearance_m": 0.148,
       "confidence": 0.8748,
       "points": {
         "FL": [
@@ -229,6 +238,7 @@
       "id": "observation-9-0",
       "time": 0.75,
       "car_id": "Car 1",
+      "clearance_m": -0.182,
       "confidence": 0.8644,
       "points": {
         "FL": [
@@ -253,6 +263,7 @@
       "id": "observation-10-0",
       "time": 0.8333,
       "car_id": "Car 1",
+      "clearance_m": -0.628,
       "confidence": 0.8766,
       "points": {
         "FL": [
@@ -277,6 +288,7 @@
       "id": "observation-11-0",
       "time": 0.9167,
       "car_id": "Car 1",
+      "clearance_m": -1.043,
       "confidence": 0.8854,
       "points": {
         "FL": [
@@ -301,6 +313,7 @@
       "id": "observation-12-0",
       "time": 1.0,
       "car_id": "Car 1",
+      "clearance_m": -1.537,
       "confidence": 0.8702,
       "points": {
         "FL": [
@@ -325,6 +338,7 @@
       "id": "observation-13-0",
       "time": 1.0833,
       "car_id": "Car 1",
+      "clearance_m": -1.828,
       "confidence": 0.8439,
       "points": {
         "FL": [
@@ -349,6 +363,7 @@
       "id": "observation-14-0",
       "time": 1.1667,
       "car_id": "Car 1",
+      "clearance_m": -1.951,
       "confidence": 0.8162,
       "points": {
         "FL": [
@@ -373,6 +388,7 @@
       "id": "observation-15-0",
       "time": 1.25,
       "car_id": "Car 1",
+      "clearance_m": -2.277,
       "confidence": 0.8453,
       "points": {
         "FL": [
@@ -397,6 +413,7 @@
       "id": "observation-16-0",
       "time": 1.3333,
       "car_id": "Car 1",
+      "clearance_m": -2.232,
       "confidence": 0.8244,
       "points": {
         "FL": [
@@ -421,6 +438,7 @@
       "id": "observation-17-0",
       "time": 1.4167,
       "car_id": "Car 1",
+      "clearance_m": -2.469,
       "confidence": 0.8305,
       "points": {
         "FL": [
@@ -445,6 +463,7 @@
       "id": "observation-18-0",
       "time": 1.5,
       "car_id": "Car 1",
+      "clearance_m": -2.212,
       "confidence": 0.837,
       "points": {
         "FL": [
@@ -469,6 +488,7 @@
       "id": "observation-19-0",
       "time": 1.5833,
       "car_id": "Car 1",
+      "clearance_m": -2.179,
       "confidence": 0.8446,
       "points": {
         "FL": [
@@ -493,6 +513,7 @@
       "id": "observation-20-0",
       "time": 1.6667,
       "car_id": "Car 1",
+      "clearance_m": -2.309,
       "confidence": 0.8373,
       "points": {
         "FL": [
@@ -517,6 +538,7 @@
       "id": "observation-21-0",
       "time": 1.75,
       "car_id": "Car 1",
+      "clearance_m": -2.373,
       "confidence": 0.8344,
       "points": {
         "FL": [
@@ -541,6 +563,7 @@
       "id": "observation-22-0",
       "time": 1.8333,
       "car_id": "Car 1",
+      "clearance_m": -2.205,
       "confidence": 0.8301,
       "points": {
         "FL": [
@@ -565,6 +588,7 @@
       "id": "observation-23-0",
       "time": 1.9167,
       "car_id": "Car 1",
+      "clearance_m": -2.161,
       "confidence": 0.8369,
       "points": {
         "FL": [

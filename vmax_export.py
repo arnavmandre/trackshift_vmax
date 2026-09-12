@@ -91,10 +91,15 @@ def build_evidence(raw, calibration_entry, threshold, fps):
     order = sorted(range(len(cars)), key=lambda i: (-np.mean(lead[i]) if lead[i] else 0.0, cars[i][0]['frame']))
     cars = [cars[i] for i in order]
     label = {id(t): f'Car {i + 1}' for i, t in enumerate(cars)}
-    car_of_detection = {}
+    car_of_detection, clearance_of_detection = {}, {}
     for track in tracks:
         for ob in track:
-            car_of_detection[(ob['frame'], tuple(ob['box']))] = label.get(id(track))
+            key = (ob['frame'], tuple(ob['box']))
+            car_of_detection[key] = label.get(id(track))
+            # Distance from the nearest track edge in metres, as measured by the
+            # evaluation pipeline (positive = past the line). Only tracked
+            # detections at or above the operating threshold get one.
+            clearance_of_detection[key] = round(ob['margin_m'], 3)
 
     observations = []
     for frame in raw:
@@ -105,6 +110,7 @@ def build_evidence(raw, calibration_entry, threshold, fps):
                 'id': f"observation-{frame['frame']}-{j}",
                 'time': round(frame['frame'] / fps, 4),
                 'car_id': car_of_detection.get((frame['frame'], tuple(d['box']))),
+                'clearance_m': clearance_of_detection.get((frame['frame'], tuple(d['box']))),
                 'confidence': round(d['score'], 4),
                 'points': points,
             })
