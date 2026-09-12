@@ -1,7 +1,0 @@
-__pycache__/
-*.pyc
-pipeline_out/detections/
-.pytest_cache/
-datasets/
-review_out/
-blind_runs/

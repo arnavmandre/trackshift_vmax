@@ -1,68 +1,33 @@
-# Trackshift VMAX
+# Trackshift VMAX — event workspace
 
-Video-based tyre-contact estimation and experimental track-limit review.
-This repository includes the selected retrained VMAX-Net checkpoint,
-source code, 40 blind clips, saved predictions and a browser review demo.
+This branch is a fresh implementation workspace. It currently contains documentation only: no imported model, trained weights, application, saved predictions, demo launcher or import workflow.
 
-## Start the demo on Windows
+## Prior work disclosure
 
-Download this repository with Code → Download ZIP, extract it, and
-double-click `start_demo.bat`. Keep the terminal open and visit
-http://127.0.0.1:8000. Python must be installed; the saved review uses
-Python standard-library code and does not require PyTorch.
+A pre-existing VMAX prototype was copied into this repository at commit 3e3cd935a13b704dc42a27b4ef7f50a4dd61ff1d. Its model training and evaluation were completed on 11 September 2026, before the event. The import did not make that work new.
 
-Or open a terminal in this folder:
+That snapshot remains at [reference/pre-event-vmax-not-submission](https://github.com/arnavmandre/trackshift_vmax/tree/reference/pre-event-vmax-not-submission) for transparent disclosure and historical reference. The original source is [arnavmandre/vmax](https://github.com/arnavmandre/vmax). Git history has not been rewritten.
 
-```powershell
-py -m vmax_vision.serve --directory retraining_out/steward_review --port 8000
-```
+The prior checkpoint, code, UI, tests and reported 73.3% precision / 64.7% recall are not claimed as work built during this hackathon. No new event implementation or new event accuracy result is claimed by this documentation.
 
-On Linux/macOS use `python3` instead of `py`.
-The demo displays saved model predictions with original video,
-overlays, frame stepping and human review controls. Playback does not
-run the neural network again.
+## Rule basis and limits
 
-## Run the model
+The supplied Trackshift AMA FAQ, section 6, permits pre-event research and demo dataset preparation, permits the idea-submission prototype as a reference, and permits either a fresh prototype or enhancements to an existing prototype. Final judging considers work actually built during the event; an identical unchanged prototype is not an eligible new contribution. Section 7 permits open-source and AI tools provided the team understands and can modify the code.
 
-Use Python 3.12 and install inference dependencies:
+It has not been established that all of the September 11 work was the prototype submitted for Round 1. Its eligibility for reuse needs organiser clarification. Follow any stricter instructions delivered at the event.
 
-```bash
-python -m pip install numpy scipy pillow opencv-python-headless
-python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-python -m vmax_vision.cli blind infer --manifest retraining_out/blind_clips/manifest.json --weights pipeline_out/vmaxnet.pt --out new_run/predictions
-python -m vmax_vision.cli blind score --manifest retraining_out/blind_clips/manifest.json --runs new_run/predictions --labels retraining_out/blind_clips/sealed/labels.json --out new_run/metrics
-```
+Separating branches does not undo pre-event work or provide organiser approval. Do not present this repository's history as exclusively event-built.
 
-Use a fresh output directory for each run. FFmpeg is additionally needed
-for scene generation. See IMPROVEMENTS.md for other commands.
+## Build from here
 
-## Model and measured results
+Develop new implementation during the official event window from the problem requirements and permitted general references. Record changes and evidence in EVENT_WORK.md. Keep the earlier implementation, weights, results and UI out of this branch unless the organisers explicitly permit their reuse and the disclosure is updated.
 
-VMAX-Net has 1,563,010 trainable parameters. The default checkpoint is
-now the selected retrained model at `pipeline_out/vmaxnet.pt`, also
-retained as `retraining_out/selected.pt`. The earlier checkpoint is
-`models/original_baseline.pt`. Hashes and origin are in
-`models/provenance.json`.
+Reformatting, renaming, translating, or asking an AI to paraphrase the old code does not establish an independent new implementation.
 
-On 40 synthetic blind clips with 17 labelled excursions, the selected
-model found 11, missed 6 and produced 4 false reports: 73.3% precision,
-64.7% recall. Median absolute margin error was 0.344 m and P95 was
-1.247 m on associated observations. Scores are not calibrated incident
-probabilities. Real-F1 performance remains unmeasured.
+The official event window in the FAQ is 12 September 12:30 PM to 13 September 12:00 PM local event time; confirm the actual start, deadline and any amendments with organisers.
 
-The model is experimental and not suitable for automatic penalties.
-These evaluated clips are now regression data; further tuning needs
-another untouched final test set.
+## Organiser clarification to ask in the event group
 
-## Reproducibility
+We developed a VMAX prototype and trained weights before the event, and initially imported them into this repository. We have now separated them as disclosed prior work and removed them from the active implementation branch without rewriting history. May we use the earlier prototype only as conceptual reference, and are its prepared synthetic datasets allowed? If incremental reuse is permitted, which components may be retained and how should we document the work judged during the event?
 
-Read RETRAINING.md, reports/retraining_20260911.json and
-retraining_out/protocol.json. The complete archived experiment is
-included, so it does not depend on the original Actions artifact's
-expiry. To start a new training experiment, use a fresh output location
-or workspace; the orchestrator refuses to overwrite existing results.
-
-Source: arnavmandre/vmax at dee38ef9d3c492c4e478c1cd6a3ebb1c22661236.
-Original experiment: https://github.com/arnavmandre/vmax/actions/runs/34606745423
-Historical upstream instructions are retained in README_UPSTREAM.md;
-follow this README for the checkpoint paths in this repository.
+No organiser confirmation has been recorded. This question has not been sent automatically.
