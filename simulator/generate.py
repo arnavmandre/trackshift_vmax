@@ -75,6 +75,7 @@ def trajectory(spec):
         for i in range(n):
             c,s=np.cos(h[i]),np.sin(h[i]);rot=np.array([[c,-s],[s,c]])
             contacts=g.CONTACT@rot.T+p[i];excess=g.distance(contacts)-g.HALF
+            contacts_3d=np.c_[contacts,g.kerb_height(excess)]
             # Independently sample rectangular contact patches in the simulator.
             xx,yy=np.meshgrid(np.linspace(-.06,.06,7),np.linspace(-.18,.18,19))
             patch=np.stack([xx.ravel(),yy.ravel()],axis=1)@rot.T
@@ -82,7 +83,7 @@ def trajectory(spec):
             covering_radius=math.sqrt(2)*.01
             footprint_lower=patch_values.min(axis=1)-covering_radius
             allrows.append(dict(frame_idx=i,time_s=float(t[i]),car_id=f'car_{ci+1}',world_position=p[i].tolist(),
-                heading_rad=float(h[i]),contacts_world=contacts.tolist(),point_margin_m=float(excess.min()),
+                heading_rad=float(h[i]),contacts_world=contacts_3d.tolist(),point_margin_m=float(excess.min()),
                 footprint_margin_m=float(footprint_lower.min()),speed_mps=float(np.linalg.norm(v[i])),
                 footprint_is_violation=bool((footprint_lower>0).all()),point_is_violation=bool((excess>0).all())))
     return sorted(allrows,key=lambda r:(r['frame_idx'],r['car_id'])),travel
@@ -99,7 +100,7 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng):
     if coverage<.5:
         raise ValueError(f'incident {spec["id"]} angle {cid} has insufficient projected car coverage ({coverage:.0%}); adjust the ring radius/height or use another seed')
     if not renderer:
-        base=g.render(track,cam);meshes=[g.car_mesh(tuple(c)) for c in colours]
+        base=g.render(track,cam)
     video=folder/'original.mp4'
     cmd=['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{width}x{height}','-r',str(spec['fps']),'-i','-','-an','-c:v','libx264','-preset','fast','-crf',str(spec['crf']),'-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
@@ -111,7 +112,9 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng):
                 mesh=[]
                 for ci,row in enumerate(current):
                     c,s=np.cos(row['heading_rad']),np.sin(row['heading_rad']);rot=np.array([[c,-s,0],[s,c,0],[0,0,1]])
-                    mesh.extend((vertices@rot.T+[*row['world_position'],0],col) for vertices,col in meshes[ci])
+                    wheel_dz=[pt[2] for pt in row['contacts_world']]
+                    body=g.car_mesh(tuple(colours[ci]),wheel_dz)
+                    mesh.extend((vertices@rot.T+[*row['world_position'],0],col) for vertices,col in body)
                 im=Image.fromarray(g.render(mesh,cam,base)[0])
             im=ImageEnhance.Brightness(im).enhance(spec['brightness'])
             if spec['blur_px']:im=im.filter(ImageFilter.GaussianBlur(spec['blur_px']))

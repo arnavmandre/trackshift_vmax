@@ -48,6 +48,7 @@ def load_manifest(root):
 
 def prepare(root):
     """Export only train/validation images; no final-test input or annotations."""
+    import geometry as sim
     root=Path(root);m=load_manifest(root)
     labels=json.loads((root/'sealed/labels.json').read_text())['clips']
     counts={}
@@ -64,17 +65,20 @@ def prepare(root):
                 ok,im=cap.read()
                 if not ok:break
                 if idx%PLAN['frame_stride']==0:
-                    h,w=im.shape[:2];lines=[]
-                    H=np.asarray(c['calibration']['homography'])
+                    h,w=im.shape[:2];lines=[];camera=c['camera_spec']
                     for row in frames.get(idx,[]):
-                        xy=transform(row['contacts_world'],H)
+                        # Full 3D projection, not the flat ground-plane homography: a
+                        # contact point elevated on a kerb must land where it actually
+                        # appears, not where a flat-ground point at the same (x,y) would.
+                        xy,contact_depth=sim.project(np.asarray(row['contacts_world']),camera)
+                        if (contact_depth<=.5).any():continue
                         # Labels mark inferred/projected contacts, not confirmed visible tyres.
                         # Conservative approximate body extent for detection supervision.
                         pos=np.asarray(row['world_position']);angle=row['heading_rad']
                         rot=np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
                         corners=np.array([[x,y] for x in (-2.9,2.9) for y in (-1.1,1.1)])@rot.T+pos
                         vertices=np.array([[*p,z] for p in corners for z in (0,1.1)])
-                        camera=c['camera_spec'];v=(vertices-np.array(camera['position_m']))@np.array(camera['R_world_to_camera']).T
+                        v=(vertices-np.array(camera['position_m']))@np.array(camera['R_world_to_camera']).T
                         proj=v@np.array(camera['K']).T
                         if (v[:,2]<=.5).any():continue
                         box=proj[:,:2]/proj[:,2:3]

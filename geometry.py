@@ -10,6 +10,18 @@ KEYS=['front_left','front_right','rear_left','rear_right']
 CONTACT=np.array([[1.8,.82], [1.8,-.82],[-1.8,.82],[-1.8,-.82]])
 T=np.arange(N)/FPS; S=8+12*T
 
+# Physical curb: starts at the boundary line (excess=0), ramps up, holds a
+# plateau, ramps back down to grass by the painted curb's outer edge.
+KERB_WIDTH_M=.8; KERB_HEIGHT_M=.05; KERB_RAMP_M=.15
+
+def kerb_height(excess):
+    """Vertical elevation at a point `excess` metres past the track boundary."""
+    e=np.asarray(excess,dtype=float)
+    ramp_up=np.clip(e/KERB_RAMP_M,0,1)
+    ramp_down=np.clip((KERB_WIDTH_M-e)/KERB_RAMP_M,0,1)
+    h=KERB_HEIGHT_M*np.minimum(ramp_up,ramp_down)
+    return np.where((e<0)|(e>KERB_WIDTH_M),0.,h)
+
 def center(s):
     s=np.asarray(s); a=np.clip(s,0,math.pi*20)/40
     p=np.stack([40*np.sin(a),40*(1-np.cos(a))],axis=-1)
@@ -88,14 +100,17 @@ def rod(a,b,r,color,segments=10):
         for q in [[rings[0][i],rings[1][i],rings[1][j]],[rings[0][i],rings[1][j],rings[0][j]],[a,rings[0][j],rings[0][i]],[b,rings[1][i],rings[1][j]]]: tri.append((np.array(q),color))
     return tri
 
-def car_mesh(color=(225,42,43)):
+def car_mesh(color=(225,42,43),wheel_dz=(0.,0.,0.,0.)):
+    """`wheel_dz` independently lifts each wheel (front_left/front_right/rear_left/rear_right
+    order, matching CONTACT) so a wheel riding a kerb visibly sits higher than one on track."""
     m=box((-.3,0,.32),(3.8,1.15,.48),color)+box((1.8,0,.34),(1.3,.35,.25),color)
     m+=box((2.5,0,.18),(.6,2,.12),(30,32,36))+box((-2.45,0,.85),(.65,1.9,.12),color)
     m+=box((-2.35,0,.55),(.18,.18,.6),(30,32,36))+box((-.5,0,.65),(1.0,.6,.3),(25,28,30))
-    for x,y in CONTACT:
-        m+=rod([x,y-.18,.36],[x,y+.18,.36],.36,(20,22,25),16)
-        m+=rod([x,y-.185,.36],[x,y+.185,.36],.15,(120,125,130),12)
-        m+=rod([x*.7,0,.3],[x,y,.36],.035,(40,40,45))
+    for (x,y),dz in zip(CONTACT,wheel_dz):
+        z=.36+dz
+        m+=rod([x,y-.18,z],[x,y+.18,z],.36,(20,22,25),16)
+        m+=rod([x,y-.185,z],[x,y+.185,z],.15,(120,125,130),12)
+        m+=rod([x*.7,0,.3],[x,y,z],.035,(40,40,45))
     for a,b in [([.2,-.4,.6],[-.6,-.4,1.0]),([-.6,-.4,1.0],[-.6,.4,1.0]),([-.6,.4,1.0],[.2,.4,.6]),([.2,0,.6],[-.6,0,1.0])]: m+=rod(a,b,.045,(240,240,240))
     return m
 
@@ -106,12 +121,25 @@ def strip(s,lo,hi,z,color):
         m.extend([(q[[0,1,2]],color),(q[[0,2,3]],color)])
     return m
 
+def sloped_strip(s,lo,hi,z_lo,z_hi,color):
+    """Like `strip`, but the two rails sit at different heights, e.g. a kerb ramp."""
+    c,n=center(s); a=c+n*lo; b=c+n*hi; m=[]
+    for i in range(len(s)-1):
+        q=np.array([[*a[i],z_lo],[*b[i],z_hi],[*b[i+1],z_hi],[*a[i+1],z_lo]])
+        m.extend([(q[[0,1,2]],color),(q[[0,2,3]],color)])
+    return m
+
 def track_mesh():
     s=np.linspace(-30,math.pi*20+30,260)
     m=strip(s,-24,24,-.04,(99,128,89))+strip(s,-11,11,-.02,(168,157,134))+strip(s,-7,7,0,(59,64,70))
+    r0,r1,r2,r3=HALF,HALF+KERB_RAMP_M,HALF+KERB_WIDTH_M-KERB_RAMP_M,HALF+KERB_WIDTH_M
     for sign in [-1,1]:
         m+=strip(s,min(sign*6.9,sign*7),max(sign*6.9,sign*7),.00001,(245,245,239))
-        for i in range(len(s)-1): m+=strip(s[i:i+2],min(sign*7,sign*7.8),max(sign*7,sign*7.8),.003,(190,35,37) if i%4<2 else (230,230,223))
+        for i in range(len(s)-1):
+            seg=s[i:i+2];color=(190,35,37) if i%4<2 else (230,230,223)
+            m+=sloped_strip(seg,sign*r0,sign*r1,0,KERB_HEIGHT_M,color)
+            m+=sloped_strip(seg,sign*r1,sign*r2,KERB_HEIGHT_M,KERB_HEIGHT_M,color)
+            m+=sloped_strip(seg,sign*r2,sign*r3,KERB_HEIGHT_M,0,color)
     return m
 
 def clip_near(v,near=.2):
