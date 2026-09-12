@@ -1,0 +1,18 @@
+{
+  "scenario": "moderate_excursion",
+  "device": "cuda",
+  "fps": 24,
+  "seconds_of_video": 2.0,
+  "frames_per_camera": 48,
+  "cameras": 3,
+  "model_load_seconds": 0.9064845009997953,
+  "processing_seconds_including_decode": 10.896881000997382,
+  "processing_seconds_per_combined_frame": 0.22701835418744545,
+  "real_time_factor": 5.448440500498691,
+  "verdicts": {
+    "violation": 19,
+    "legal": 27,
+    "review": 2
+  },
+  "timing_scope": "Sequential three-view verdicts, video decode, crop, preprocessing, model, geometry and fusion; excludes model loading, display and network I/O."
+}

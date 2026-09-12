@@ -191,3 +191,42 @@ CLI: `--video <path> --camera-json <path> --background <path> --checkpoint <path
 - A "force re-run" control for the slow model once cached.
 - Extending this to the full 160-clip blind set — stays scoped to the
   current 32-clip UI set.
+
+## Amendment (during implementation, Task 2): background-subtraction cropping does not work for us
+
+The original design (above) assumed we'd build one background plate per
+camera angle, matching their own `build_backgrounds()`/`find_car_crop()`
+approach. Building it revealed the assumption behind it is false for our
+data: their cropper requires a camera that never moves between clips ("known
+static synthetic cameras," per their own `TRAINING.md`). Checked directly:
+our simulator randomizes the camera per incident even at the same angle
+index (`a00`) — 8 different incidents' `a00` cameras had 8 different
+positions. The resulting median background was a blurry composite of
+different framings, unusable for reliable difference-based cropping.
+
+**Fix**: skip their background-subtraction cropper entirely. Derive each
+frame's crop directly from our own fast model's already-detected tyre
+keypoints (bounding box of all 4 points, padded by the same 1.65x factor
+their own default config uses), instead of `boundary_training.find_car_crop`.
+This also removes the need for any background plate at all — Task 2 (background
+generation) is dropped. Task 3 (the bridge script) now calls the slow
+model's lower-level pieces directly (`crop_image`, `decode_heatmaps`,
+`from_crop`, `decide` — all public functions in `boundary_training.py`)
+instead of its `predict_frame()` wrapper, substituting our own crop.
+
+This does not change what the slow model itself does or its accuracy
+characteristics — only how the region it looks at is located. It also adds
+**multi-car support for free**: since the crop now comes from our fast
+model's per-frame detections rather than a single background-subtraction
+result, any frame with more than one detection just gets more than one
+independent crop and slow-model verdict, keyed by `(frame, car_index)`
+rather than a tracked car identity (which the fast model does not provide).
+
+One accuracy caveat, discussed with and accepted by the user: escalation to
+the slow model happens specifically when the fast model's confidence is
+low, which is also when its keypoint locations (and therefore the derived
+crop) are more likely to be imperfect. Generous padding mitigates this;
+when the crop is bad enough that the slow model can't find the car in it,
+`decide()` already returns `None` (its own "inconclusive" reason) rather
+than a wrong confident answer — which correctly reads as low confidence in
+the agreement badge, not a silent failure.

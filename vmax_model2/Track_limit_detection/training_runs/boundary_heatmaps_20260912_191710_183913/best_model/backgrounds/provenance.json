@@ -1,0 +1,440 @@
+{
+  "broadcast": [
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/broadcast.mp4",
+      "frame_idx": 95
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/broadcast.mp4",
+      "frame_idx": 95
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/broadcast.mp4",
+      "frame_idx": 95
+    }
+  ],
+  "exit": [
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/exit.mp4",
+      "frame_idx": 95
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/exit.mp4",
+      "frame_idx": 95
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/exit.mp4",
+      "frame_idx": 95
+    }
+  ],
+  "trackside": [
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/clean_lap/trackside.mp4",
+      "frame_idx": 95
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.05m/trackside.mp4",
+      "frame_idx": 95
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 0
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 8
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 17
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 25
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 34
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 43
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 51
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 60
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 69
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 77
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 86
+    },
+    {
+      "video": "/home/aditya/work/trackshift/data_boundaries/violation_0.30m/trackside.mp4",
+      "frame_idx": 95
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Isolated venv for the slow model -- never committed, ~5GB, rebuild via requirements.txt.
+.venv_bench/
+__pycache__/
+
+# Raw training/eval video datasets that shipped with this project -- large,
+# not needed to run vmax_bridge.py against our own clips. Excluded the same
+# way the main repo excludes its own heavy trackshift_runs/ artifacts.
+/data/
+/data_boundaries/
+/spam/vmax/data/
+
+# Only the checkpoint actually used by vmax_bridge.py is kept (see the
+# negation below); other training runs/experiments are not backed up here.
+/training_runs/*
+!/training_runs/boundary_heatmaps_20260912_191710_183913/

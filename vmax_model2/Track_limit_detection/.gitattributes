@@ -1,0 +1,2 @@
+# The current trained weights are 128 MB and require Git LFS on common Git hosts.
+/training_runs/boundary_heatmaps_20260912_191710_183913/best_model/boundary_heatmaps.pt filter=lfs diff=lfs merge=lfs -text
