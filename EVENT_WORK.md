@@ -65,3 +65,28 @@ Fresh synthetic blind metrics (not real-F1 accuracy):
   "confidence": "uncalibrated model scores; not incident probabilities"
 }
 ```
+
+## New model connected to steward console
+
+Verified selected checkpoint, prediction and video hashes. Original videos and saved inference geometry are available in the new GUI.
+
+Measured synthetic result:
+
+```json
+{
+  "clips": 40,
+  "true_positives": 21,
+  "false_reports": 2,
+  "missed_events": 3,
+  "precision": 0.9130434782608695,
+  "recall": 0.875,
+  "f1": 0.8936170212765957,
+  "margin_p50_m": 0.2360049336458534,
+  "margin_p95_m": 0.8830636615067842,
+  "threshold": 0.5,
+  "labels_sha256": "81de63d74911d5c173b44c668fe4934e56fa7a435c0704104699fa13870530e6",
+  "prediction_sha256": "2b1568e4ce0cf066163f625e8c898c871c40c4f982d5ceaf5b2a5040fab5b41e",
+  "scope": "synthetic fixed-corner, exact camera; evaluator-only trajectory association; temporal IoU >= 0.3",
+  "confidence": "uncalibrated model scores; not incident probabilities"
+}
+```
