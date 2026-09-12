@@ -3,6 +3,10 @@ import json, math, subprocess, pathlib
 import numpy as np
 from scipy.optimize import brentq
 from PIL import Image, ImageDraw
+try:
+    from simulator.raster import rasterize
+except ImportError:
+    rasterize=None
 
 OUT=pathlib.Path(__file__).parent/'output'; OUT.mkdir(exist_ok=True)
 FPS=24; N=96; W,H=640,360; RADIUS=40.; HALF=7.; LINE=.1
@@ -150,17 +154,26 @@ def clip_near(v,near=.2):
     return np.array(out)
 
 def render(mesh,cam,base=None):
-    if base is None: rgb=np.full((H,W,3),(164,190,207),np.uint8); depth=np.full((H,W),np.inf)
+    width,height=cam['resolution']
+    if base is None: rgb=np.full((height,width,3),(164,190,207),np.uint8); depth=np.full((height,width),np.inf)
     else: rgb,depth=[a.copy() for a in base]
     rot=np.array(cam['R_world_to_camera']); K=np.array(cam['K'])
-    for vertices,color in mesh:
-        normal=np.cross(vertices[1]-vertices[0],vertices[2]-vertices[0]); normal/=max(np.linalg.norm(normal),1e-12)
-        shade=.65+.35*abs(normal@np.array([.3,-.4,.866]))
-        col=np.clip(np.array(color)*shade,0,255).astype(np.uint8)
-        poly=clip_near((vertices-cam['position_m'])@rot.T)
+    if not len(mesh):return rgb,depth
+    vertices=np.asarray([v for v,_ in mesh]); colours=np.asarray([c for _,c in mesh])
+    normals=np.cross(vertices[:,1]-vertices[:,0],vertices[:,2]-vertices[:,0])
+    normals/=np.maximum(np.linalg.norm(normals,axis=1,keepdims=True),1e-12)
+    shades=.65+.35*np.abs(normals@np.array([.3,-.4,.866]))
+    colours=np.clip(colours*shades[:,None],0,255).astype(np.uint8)
+    camera_vertices=(vertices-cam['position_m'])@rot.T
+    if rasterize is not None:
+        rasterize(camera_vertices,colours,K.astype(float),rgb,depth)
+        return rgb,depth
+    for vcam,col in zip(camera_vertices,colours):
+        if np.all(vcam[:,2]<.2):continue
+        poly=vcam if np.all(vcam[:,2]>=.2) else clip_near(vcam)
         for k in range(1,len(poly)-1):
             v=poly[[0,k,k+1]]; h=v@K.T; uv=h[:,:2]/h[:,2,None]
-            xmin,ymin=np.maximum(np.floor(uv.min(0)),[0,0]).astype(int); xmax,ymax=np.minimum(np.ceil(uv.max(0)),[W-1,H-1]).astype(int)
+            xmin,ymin=np.maximum(np.floor(uv.min(0)),[0,0]).astype(int); xmax,ymax=np.minimum(np.ceil(uv.max(0)),[width-1,height-1]).astype(int)
             if xmin>xmax or ymin>ymax: continue
             a,b,c=uv; den=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1])
             if abs(den)<1e-10: continue

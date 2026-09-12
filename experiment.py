@@ -14,8 +14,10 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 OUT=Path('experiment_out')
-PLAN={'model':'yolo26n-pose.pt','epochs':20,'imgsz':416,'batch':8,'seed':12092026,
-      'frame_stride':4,'thresholds':[.15,.3,.5],'blind_seed':2026091207,'blind_count':40,'blind_angles':4,
+PLAN={'model':'yolo26n-pose.pt','epochs':20,'imgsz':960,'batch':8,'seed':12092026,
+      'frame_stride':4,'thresholds':[.15,.3,.5],'blind_seed':2026091219,'blind_count':40,'blind_angles':4,
+      'width':960,'height':540,'fps':12,'seconds':2,'supersample':2,
+      'development_seed':2026091218,'development_count':96,'development_angles':4,
       'selection':'highest validation event F1, then lower margin P95',
       'keypoints':['front_left','front_right','rear_left','rear_right'],
       'initialization':'official COCO pretrained pose weights; no earlier VMAX weights',
@@ -50,6 +52,10 @@ def prepare(root):
     """Export only train/validation images; no final-test input or annotations."""
     import geometry as sim
     root=Path(root);m=load_manifest(root)
+    expected={key:PLAN[key] for key in ('width','height','fps','seconds','supersample')}
+    generator=m.get('generator',{})
+    if any(generator.get(k)!=v for k,v in expected.items()) or generator.get('kerb_height_m')!=sim.KERB_HEIGHT_M:
+        raise ValueError('development data does not match protocol; run experiment.py generate with a fresh --data directory')
     labels=json.loads((root/'sealed/labels.json').read_text())['clips']
     counts={}
     for split in ('train','validation'):
@@ -66,6 +72,8 @@ def prepare(root):
                 if not ok:break
                 if idx%PLAN['frame_stride']==0:
                     h,w=im.shape[:2];lines=[];camera=c['camera_spec']
+                    if [w,h]!=[PLAN['width'],PLAN['height']] or camera['resolution']!=[w,h]:
+                        raise ValueError('decoded resolution or camera calibration differs from protocol')
                     for row in frames.get(idx,[]):
                         # Full 3D projection, not the flat ground-plane homography: a
                         # contact point elevated on a kerb must land where it actually
@@ -105,15 +113,19 @@ def prepare(root):
     # No horizontal flip: preserve camera/track handedness during this first experiment.
     (OUT/'dataset.yaml').write_text(f'path: {(OUT/"dataset").resolve()}\ntrain: images/train\nval: images/validation\nkpt_shape: [4, 3]\nflip_idx: [1, 0, 3, 2]\nkpt_oks_sigmas: [0.05, 0.05, 0.05, 0.05]\nnames:\n  0: car\n')
     save(OUT/'dataset_provenance.json',{'manifest_sha256':digest(root/'manifest.json'),
+        'labels_sha256':digest(root/'sealed/labels.json'),
         'sampled_images':counts,'train_families':[c['family_id'] for c in m['clips'] if c['split']=='train'],
         'validation_families':[c['family_id'] for c in m['clips'] if c['split']=='validation'],
-        'reuse':'earlier prepared simulator clips; not newly captured event footage'})
+        'generator':m.get('generator'),'reuse':'locally generated synthetic clips; not real footage'})
     print('Dataset export:',counts,flush=True)
 
 
 def train():
     import torch
+    from importlib.metadata import distributions
     from ultralytics import YOLO
+    (OUT/'environment.txt').write_text('\n'.join(sorted(f"{d.metadata['Name']}=={d.version}" for d in distributions())))
+    save(OUT/'source_hashes.json',{p:digest(p) for p in ('experiment.py','geometry.py','simulator/generate.py','simulator/raster.py')})
     device='cuda' if torch.cuda.is_available() else 'cpu'
     if device=='cpu':torch.set_num_threads(2)
     model=YOLO(PLAN['model'])
@@ -141,12 +153,14 @@ def train():
 def predict(root,split,weights,out):
     """Video-only model execution. No access to annotation files here."""
     from ultralytics import YOLO
+    import torch
+    device='cuda' if torch.cuda.is_available() else 'cpu'
     root=Path(root);m=load_manifest(root);model=YOLO(str(weights));records={}
     start=time.time()
     for c in m['clips']:
         if c['split']!=split:continue
         rows=[]
-        for i,r in enumerate(model.predict(source=str(root/c['video']),stream=True,device='cpu',
+        for i,r in enumerate(model.predict(source=str(root/c['video']),stream=True,device=device,
                         imgsz=PLAN['imgsz'],conf=.1,max_det=8,verbose=False)):
             points=r.keypoints.data.cpu().numpy() if r.keypoints is not None else np.empty((0,4,3))
             if points.size and points.shape[1]!=4:raise ValueError('model does not have four tyre keypoints')
@@ -158,7 +172,8 @@ def predict(root,split,weights,out):
         print('Inferred',c['id'],flush=True)
     save(out,records)
     save(str(out)+'.receipt.json',{'predictions_sha256':digest(out),'manifest_sha256':digest(root/'manifest.json'),
-         'weights_sha256':digest(weights),'split':split,'seconds':time.time()-start,'labels_read':False})
+         'weights_sha256':digest(weights),'split':split,'seconds':time.time()-start,'labels_read':False,
+         'imgsz':PLAN['imgsz'],'device':device})
     return records
 
 
@@ -333,9 +348,7 @@ def final_test():
     selection=json.loads((OUT/'selection.json').read_text());weights=OUT/'selected.pt'
     if digest(weights)!=selection['weights_sha256']:raise ValueError('selected model changed')
     blind=OUT/'fresh_blind'
-    subprocess.run([sys.executable,'-m','simulator.generate','--out',str(blind),'--count',str(PLAN['blind_count']),
-                    '--seed',str(PLAN['blind_seed']),'--fps','12','--seconds','2','--width','480','--height','270',
-                    '--angles',str(PLAN['blind_angles'])],check=True)
+    generate_dataset(blind,PLAN['blind_count'],PLAN['blind_seed'],PLAN['blind_angles'])
     m=json.loads((blind/'manifest.json').read_text())
     development=json.loads((OUT/'dataset_provenance.json').read_text())
     used=set(development['train_families']+development['validation_families'])
@@ -349,13 +362,22 @@ def final_test():
     print('FINAL FRESH BLIND RESULT',json.dumps(summary),flush=True)
 
 
+def generate_dataset(destination,count,seed,angles):
+    subprocess.run([sys.executable,'-m','simulator.generate','--out',str(destination),
+        '--count',str(count),'--seed',str(seed),'--angles',str(angles),
+        *[arg for key in ('width','height','fps','seconds','supersample')
+          for arg in ('--'+key,str(PLAN[key]))]],check=True)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('stage',choices=['prepare','train','select','test']);p.add_argument('--data',default='data/development');a=p.parse_args()
-    OUT.mkdir(exist_ok=True)
+    p=argparse.ArgumentParser();p.add_argument('stage',choices=['generate','prepare','train','select','test']);p.add_argument('--data',default='data/development');p.add_argument('--out',default='experiment_out');a=p.parse_args()
+    OUT=Path(a.out)
+    OUT.mkdir(parents=True,exist_ok=True)
     protocol=OUT/'protocol.json'
     if protocol.exists() and json.loads(protocol.read_text())!=PLAN:raise ValueError('protocol changed mid-experiment')
     save(protocol,PLAN)
-    if a.stage=='prepare':prepare(a.data)
+    if a.stage=='generate':generate_dataset(a.data,PLAN['development_count'],PLAN['development_seed'],PLAN['development_angles'])
+    elif a.stage=='prepare':prepare(a.data)
     elif a.stage=='train':train()
     elif a.stage=='select':select(a.data)
     else:final_test()

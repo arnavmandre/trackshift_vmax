@@ -15,6 +15,8 @@ import argparse
 import hashlib
 import json
 import math
+import time
+import os
 from pathlib import Path
 import subprocess
 import numpy as np
@@ -23,7 +25,7 @@ import geometry as g
 from .evidence import sha256
 
 
-def make_specs(count, seed, fps=24, seconds=3, width=640, height=360, angles=6):
+def make_specs(count, seed, fps=24, seconds=3, width=960, height=540, angles=6):
     if count < 1 or fps < 1 or seconds <= 0 or width < 64 or height < 64 or width%2 or height%2:
         raise ValueError('count/fps/duration positive; dimensions even and at least 64')
     if angles < 1:
@@ -89,7 +91,7 @@ def trajectory(spec):
     return sorted(allrows,key=lambda r:(r['frame_idx'],r['car_id'])),travel
 
 
-def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng):
+def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng,meshes=None):
     cid=cam['name'];folder=dest/cid;folder.mkdir()
     width,height=spec['width'],spec['height']
     main_rows=[row for row in rows if row['car_id']=='car_1']
@@ -99,23 +101,22 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng):
     coverage=float(visible.mean())
     if coverage<.5:
         raise ValueError(f'incident {spec["id"]} angle {cid} has insufficient projected car coverage ({coverage:.0%}); adjust the ring radius/height or use another seed')
+    render_cam=dict(cam)
+    scale=spec.get('supersample',1)
+    render_cam['resolution']=[width*scale,height*scale]
+    render_cam['K']=(np.diag([scale,scale,1])@np.asarray(cam['K'])).tolist()
     if not renderer:
-        base=g.render(track,cam)
+        base=g.render(track,render_cam)
     video=folder/'original.mp4'
-    cmd=['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{width}x{height}','-r',str(spec['fps']),'-i','-','-an','-c:v','libx264','-preset','fast','-crf',str(spec['crf']),'-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
+    cmd=[os.environ.get('FFMPEG','ffmpeg'),'-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{width}x{height}','-r',str(spec['fps']),'-i','-','-an','-c:v','libx264','-preset','fast','-crf',str(spec['crf']),'-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
     try:
         for i,current in byframe.items():
             if renderer:
                 im=renderer.frame(cam,current,[d[i] for d in travel])
             else:
-                mesh=[]
-                for ci,row in enumerate(current):
-                    c,s=np.cos(row['heading_rad']),np.sin(row['heading_rad']);rot=np.array([[c,-s,0],[s,c,0],[0,0,1]])
-                    wheel_dz=[pt[2] for pt in row['contacts_world']]
-                    body=g.car_mesh(tuple(colours[ci]),wheel_dz)
-                    mesh.extend((vertices@rot.T+[*row['world_position'],0],col) for vertices,col in body)
-                im=Image.fromarray(g.render(mesh,cam,base)[0])
+                im=Image.fromarray(g.render(meshes[i],render_cam,base)[0])
+                if scale>1:im=im.resize((width,height),Image.Resampling.LANCZOS)
             im=ImageEnhance.Brightness(im).enhance(spec['brightness'])
             if spec['blur_px']:im=im.filter(ImageFilter.GaussianBlur(spec['blur_px']))
             pixels=np.asarray(im).astype(float)+rng.normal(0,spec['noise_sigma'],(height,width,3))
@@ -127,12 +128,16 @@ def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng):
     return video,coverage
 
 
-def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,backend='cpu',plan_only=False,angles=6):
+def generate(destination,count=10,seed=0,fps=24,seconds=3,width=960,height=540,backend='cpu',plan_only=False,angles=6,supersample=2):
+    if supersample not in (1,2,3):raise ValueError('supersample must be 1, 2 or 3')
+    if backend!='cpu' and supersample!=1:raise ValueError('supersampling currently requires CPU backend')
+    started=time.perf_counter()
     dest=Path(destination)
     if (dest/'manifest.json').exists() or (dest/'sealed'/'labels.json').exists():
         raise ValueError('destination already contains a dataset; choose a new directory')
     dest.mkdir(parents=True,exist_ok=True); (dest/'sealed').mkdir(exist_ok=True)
     specs=make_specs(count,seed,fps,seconds,width,height,angles)
+    for spec in specs:spec['supersample']=supersample
     (dest/'sealed'/'scenes.json').write_text(json.dumps(specs,indent=2))
     if plan_only:
         print(f'{count} incidents x {angles} angles reproducible; videos not rendered')
@@ -144,7 +149,7 @@ def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,b
         r.WIDTH,r.HEIGHT=width,height;g.W,g.H=width,height
         renderer=r.Renderer()
     track=g.track_mesh() if renderer is None else None
-    manifest={'schema_version':2,'dataset_kind':'synthetic_fixed_vmax_corner','seed':seed,'angles':angles,
+    manifest={'schema_version':3,'generator':{'width':width,'height':height,'fps':fps,'seconds':seconds,'supersample':supersample,'backend':backend,'kerb_height_m':g.KERB_HEIGHT_M},'dataset_kind':'synthetic_fixed_vmax_corner','seed':seed,'angles':angles,
               'limitations':['same track and vehicle geometry as development set','not a real-footage benchmark'], 'clips':[]}
     truth={'schema_version':1,'clips':{}}
     for k,spec in enumerate(specs):
@@ -152,6 +157,18 @@ def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,b
         rows,travel=trajectory(spec)
         colours=spec['colours']; colours[1]=colours[0] if spec['same_livery'] else colours[1]
         byframe={i:[row for row in rows if row['frame_idx']==i] for i in range(spec['frames'])}
+        # Geometry depends on the incident/frame, never on the camera. Build once
+        # and reuse across every angle, including independently elevated wheels.
+        meshes={}
+        if renderer is None:
+            for i,current in byframe.items():
+                mesh=[]
+                for ci,row in enumerate(current):
+                    c,s=np.cos(row['heading_rad']),np.sin(row['heading_rad'])
+                    rot=np.array([[c,-s,0],[s,c,0],[0,0,1]])
+                    body=g.car_mesh(tuple(colours[ci]),[pt[2] for pt in row['contacts_world']])
+                    mesh.extend((v@rot.T+[*row['world_position'],0],col) for v,col in body)
+                meshes[i]=mesh
         tel=[]
         for row in rows:
             if row['frame_idx']%max(1,round(fps/5))==0 and tel_rng.random()>.1:
@@ -165,7 +182,7 @@ def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,b
         cams=ring_cameras(spec['id'],spec['incident_centre'],spec['angles'],spec['ring_radius'],spec['ring_height'],spec['ring_fov'])
         for cam in cams:
             cam['fps']=fps
-            video,coverage=_render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng)
+            video,coverage=_render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng,meshes)
             cid=cam['name']
             entry=dict(id=cid,family_id=spec['family_id'],split=spec['split'],video=f'{cid}/original.mp4',
                 video_sha256=sha256(video),fps=fps,frames=spec['frames'],projected_primary_centre_coverage=coverage,
@@ -174,6 +191,7 @@ def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,b
                 camera_spec=cam,telemetry=telemetry_path)
             manifest['clips'].append(entry);truth['clips'][cid]={'frames':rows,'video_sha256':entry['video_sha256']}
         print(f'{k+1}/{count} {spec["id"]} {spec["split"]} ({spec["angles"]} angles)',flush=True)
+    manifest['generation_seconds']=time.perf_counter()-started
     (dest/'manifest.json').write_text(json.dumps(manifest,indent=2))
     (dest/'sealed'/'labels.json').write_text(json.dumps(truth))
     return manifest
@@ -183,9 +201,10 @@ def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out',required=True);p.add_argument('--count',type=int,default=10);p.add_argument('--seed',type=int,default=0)
     p.add_argument('--fps',type=int,default=24);p.add_argument('--seconds',type=float,default=3)
-    p.add_argument('--width',type=int,default=640);p.add_argument('--height',type=int,default=360)
+    p.add_argument('--width',type=int,default=960);p.add_argument('--height',type=int,default=540)
+    p.add_argument('--supersample',type=int,choices=[1,2,3],default=2)
     p.add_argument('--angles',type=int,default=6,help='cameras spaced around the 360-degree ring per incident')
     p.add_argument('--backend',choices=['cpu','opengl'],default='cpu');p.add_argument('--plan-only',action='store_true')
-    a=p.parse_args(argv);generate(a.out,a.count,a.seed,a.fps,a.seconds,a.width,a.height,a.backend,a.plan_only,a.angles)
+    a=p.parse_args(argv);generate(a.out,a.count,a.seed,a.fps,a.seconds,a.width,a.height,a.backend,a.plan_only,a.angles,a.supersample)
 
 if __name__=='__main__':main()
