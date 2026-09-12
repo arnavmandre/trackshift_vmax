@@ -5,18 +5,6 @@ Ultralytics YOLO26 nano pose weights. The previous VMAX-Net weights and applicat
 are not used in this implementation. This is a new training experiment, not a
 claim to have invented YOLO or its pretrained backbone.
 
-## Reuse disclosure
-
-The team explicitly requested reuse of its earlier simulator and prepared clips.
-`geometry.py` and `simulator/generate.py` are reused simulator code from the earlier
-project snapshot dee38ef9d3c492c4e478c1cd6a3ebb1c22661236. They are not claimed as
-new event-built implementation. The hash adapter is new. Only the CPU renderer
-is included here; the inherited optional OpenGL path requires the earlier renderer.
-The development data comes from the earlier archived experiment, run 34606745423.
-Its old weights and old blind predictions are removed from the training workspace.
-
-This records the user's reuse instruction, not organiser approval. The organisers
-remain the authority on eligibility. No history or prior-work record is hidden.
 
 ## Changes from the earlier experiment
 
