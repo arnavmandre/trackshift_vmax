@@ -6,7 +6,7 @@ This branch is a fresh implementation workspace. It currently contains documenta
 
 A pre-existing VMAX prototype was copied into this repository at commit 3e3cd935a13b704dc42a27b4ef7f50a4dd61ff1d. Its model training and evaluation were completed on 11 September 2026, before the event. The import did not make that work new.
 
-That snapshot remains at [reference/pre-event-vmax-not-submission](https://github.com/arnavmandre/trackshift_vmax/tree/reference/pre-event-vmax-not-submission) for transparent disclosure and historical reference. The original source is [arnavmandre/vmax](https://github.com/arnavmandre/vmax). Git history has not been rewritten.
+That snapshot remains on the `reference/pre-event-vmax-not-submission` branch for transparent disclosure and historical reference. The prior work was developed by this team in its earlier VMAX project. Git history has not been rewritten.
 
 The prior checkpoint, code, UI, tests and reported 73.3% precision / 64.7% recall are not claimed as work built during this hackathon. No new event implementation or new event accuracy result is claimed by this documentation.
 
