@@ -230,3 +230,34 @@ when the crop is bad enough that the slow model can't find the car in it,
 `decide()` already returns `None` (its own "inconclusive" reason) rather
 than a wrong confident answer — which correctly reads as low confidence in
 the agreement badge, not a silent failure.
+
+## Amendment (post-delivery UX pass)
+
+Follow-up changes made after the initial implementation shipped, based on
+direct user feedback using the running UI:
+
+- **Auto-escalation threshold raised from 0.75 to 0.80** (`CONFIDENCE_ESCALATION_THRESHOLD`
+  in `vmax_live_server.py`) — more clips now get a second opinion.
+- **"Accurate model" renamed to "deep model"** everywhere user-facing, to
+  match the header's existing "Fast: … · Deep: …" labels. The trigger
+  button now reads "Run on deep model".
+- **Standardized on "confidence score"** as the one term for the fast
+  model's per-observation/per-clip confidence, replacing "detector score"/
+  "score" in every user-facing string this project controls, and made the
+  live per-frame confidence readout visually prominent (was small muted
+  text, easy to miss).
+- **Fixed the "Deep: offline" header label**, which was hardcoded and never
+  reflected whether the deep model had actually run for the current clip.
+- **Clip status now always states which model(s) processed it** ("Fast
+  model only" vs "Fast + Deep models", plus their agreement), not only once
+  both had run.
+- **The trigger button itself was upgraded** from an easy-to-miss grey text
+  link to a bordered, colored button — it existed correctly before but was
+  effectively invisible.
+- **Human review decisions now propagate across an incident's camera
+  angles**: saving a decision on one clip applies the same decision to
+  every other clip sharing that "Incident N" prefix, since a steward's
+  verdict is about the incident, not one specific camera's footage of it.
+- **Queue rows show a colored border reflecting the saved human review**:
+  red once confirmed off track, green once confirmed on track — visible
+  without opening each clip.

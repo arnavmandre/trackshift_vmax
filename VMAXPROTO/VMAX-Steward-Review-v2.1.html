@@ -44,7 +44,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
  <div class="queue-help"><p>Videos stay on your device.<br>Reopen files after refreshing.</p><p style="margin-top:14px"><kbd>Space</kbd> Play / pause<br><kbd>←</kbd> <kbd>→</kbd> Step by configured FPS<br><kbd>M</kbd> Add bookmark · <kbd>N</kbd> Next unreviewed</p><button class="link" id="help" style="margin-top:14px">How this prototype works</button></div>
  </aside>
  <section class="workspace">
-  <div class="clip-heading"><div><h1 id="clipTitle">clip_01</h1><p id="playbackStatus">Playback only — not analysed</p></div><div style="display:flex;gap:12px;align-items:center"><button id="runBetterModel" style="font-weight:600;border-color:var(--amber);color:var(--amber)">Run through accurate model</button><button class="link" id="removeClip" hidden>Remove clip</button></div></div>
+  <div class="clip-heading"><div><h1 id="clipTitle">clip_01</h1><p id="playbackStatus">Playback only — not analysed</p></div><div style="display:flex;gap:12px;align-items:center"><button id="runBetterModel" style="font-weight:600;border-color:var(--amber);color:var(--amber)">Run on deep model</button><button class="link" id="removeClip" hidden>Remove clip</button></div></div>
   <div id="guidedBar" class="guided-bar" hidden role="status" aria-live="polite">
    <div class="guided-text"><strong id="guidedStep">—</strong><span id="guidedSub"></span></div>
    <div class="guided-actions"><button class="link amber" id="guidedSkip" hidden>Skip this tyre</button><button class="link" id="guidedCancel">Cancel measuring</button></div>
@@ -62,7 +62,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
    <label class="toggle" title="Preference saved; requires model output"><span>Tyre overlay</span><input id="tyreOverlay" type="checkbox" checked></label><label class="toggle" title="Preference saved; requires a calibrated boundary"><span>Boundary</span><input id="boundary" type="checkbox"></label>
   </div>
   <input type="range" class="seek" id="seek" min="0" max="1" step="0.001" value="0" aria-label="Seek video" disabled>
-  <div class="stats"><div class="stat"><p>Mean imported detector score</p><strong>—</strong></div><div class="stat"><p>Observations with a car</p><strong>—</strong></div><div class="stat"><p>Imported candidate windows</p><strong>—</strong></div></div>
+  <div class="stats"><div class="stat"><p>Mean confidence score</p><strong>—</strong></div><div class="stat"><p>Observations with a car</p><strong>—</strong></div><div class="stat"><p>Imported candidate windows</p><strong>—</strong></div></div>
   <div class="timeline"><div class="timeline-title"><span>Estimated clearance (m)</span><span class="tiny">Awaiting model output</span></div><div class="timeline-chart" id="timeline" aria-label="Timeline; click to seek"><div class="zero-line"></div><span class="zero-label">0</span><div class="plot-empty">No metre-based clearance available in this prototype</div><div id="markerTicks"></div><div class="playhead" id="playhead"></div></div><p class="timeline-foot">This chart is a placeholder; per-frame clearance in metres is not yet implemented.</p></div>
   <div class="workspace-foot"><label>Stepping FPS <input id="fps" type="number" class="fps-input" min="1" max="240" step="0.001" value="25" title="Set this to the source video frame rate" aria-label="Stepping FPS"> <span> · user-supplied</span></label><span>Review aid · the steward makes the decision</span></div>
  </section>
@@ -96,7 +96,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
    <div class="model-block">
     <div class="model-head"><span>This observation</span><span class="model-pill" id="obsSourcePill">—</span></div>
     <div class="wb-metrics">
-     <div>Detector score<strong id="wbConfidence">—</strong><small>Uncalibrated · not offence probability</small></div>
+     <div>Confidence score<strong id="wbConfidence">—</strong><small>Uncalibrated · not offence probability</small></div>
      <div>Signed pixel distance (original / adjusted)<strong id="wbDistance">— / — px</strong><small>Minimum signed contact-point distance to the drawn boundary</small></div>
     </div>
     <p class="wb-help" id="wbGate">Measure this frame, or pick an existing observation below, to see evidence here.</p>
@@ -139,9 +139,9 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
 <dialog id="carDialog"><form id="carForm"><h2>Manual car identification</h2><p>This is your label, not a model identification.</p><label>Car number or label<input id="carInput" maxlength="40" required placeholder="e.g. #22" autocomplete="off"></label><div class="dialog-actions"><button type="button" data-close="carDialog">Cancel</button><button class="primary" type="submit">Use label</button></div></form></dialog>
 <dialog id="removeDialog"><h2>Remove this clip?</h2><p>This removes the clip's saved notes and markers from this browser. The original video file is untouched. Export decisions first if you need to keep the review.</p><div class="dialog-actions"><button data-close="removeDialog">Cancel</button><button class="primary" id="confirmRemove">Remove clip</button></div></dialog>
 <dialog id="betterModelDialog">
- <h2>Accurate model result</h2>
+ <h2>Deep model result</h2>
  <div id="betterModelLoading">
-  <p>Running <strong id="betterModelClipName"></strong> through the accurate model. This is much slower than the fast model — typically several seconds per clip.</p>
+  <p>Running <strong id="betterModelClipName"></strong> through the deep model. This is much slower than the fast model — typically several seconds per clip.</p>
   <div style="width:100%;height:8px;background:#1c1c1d;border:1px solid #2e2e30;border-radius:4px;overflow:hidden;margin-top:14px">
    <div id="betterModelBar" style="height:100%;width:0%;background:#d90d17;transition:width .3s linear"></div>
   </div>
@@ -266,6 +266,9 @@ function hasVideo(){return !!current()&&urls.has(activeId)&&video.readyState>=2;
 // imported for it -- distinct from urls.has(id), which only means a video file
 // is currently open for playback.
 function analysed(c){return !!c?.evidence?.original;}
+// Clips are named "Incident N Clip M.mp4" -- the "Incident N" prefix is the
+// stable grouping key for "all camera angles of the same incident".
+function incidentKey(c){const m=/^(Incident \d+)/.exec(c?.name||'');return m?m[1]:null;}
 function meanScore(c){
  const obs=c?.evidence?.original?.observations;if(!obs?.length)return null;
  const scored=obs.filter(o=>o.confidence!=null);if(!scored.length)return null;
@@ -299,7 +302,7 @@ function list(){
   else{verdict.textContent='';}
   verdict.style.cssText+='font-size:11px;font-weight:600;margin-top:2px';
   const meta=document.createElement('div');meta.className='clip-meta';const ms=meanScore(c);
-  meta.textContent=c.loading?'Processing through the fast model…':analysed(c)?`score ${ms==null?'—':ms.toFixed(0)+'%'} · ${c.evidence.original.candidates.length} candidate window${c.evidence.original.candidates.length===1?'':'s'}`:c.pending?'Not processed yet · click to run':`score — · ${urls.has(c.id)?'not analysed':'reopen video'}`;const status=document.createElement('div');status.className='clip-status '+(c.review?.decision||'');status.textContent=(labels[c.review?.decision]||'Unreviewed')+(dirty(c)?' · draft':'');b.append(top,verdict,meta,status);b.onclick=()=>openClip(c.id);$('clips').append(b);}
+  meta.textContent=c.loading?'Processing through the fast model…':analysed(c)?`confidence score ${ms==null?'—':ms.toFixed(0)+'%'} · ${c.evidence.original.candidates.length} candidate window${c.evidence.original.candidates.length===1?'':'s'}`:c.pending?'Not processed yet · click to run':`confidence score — · ${urls.has(c.id)?'not analysed':'reopen video'}`;const status=document.createElement('div');status.className='clip-status '+(c.review?.decision||'');status.textContent=(labels[c.review?.decision]||'Unreviewed')+(dirty(c)?' · draft':'');b.append(top,verdict,meta,status);b.onclick=()=>openClip(c.id);$('clips').append(b);}
  if(!rows.length){const p=document.createElement('p');p.className='queue-empty';p.textContent=filter==='candidates'?'No imported candidate windows yet. Manual bookmarks live in the Review tab.':'No clips match this view.';$('clips').append(p);}
 }
 // Playback status doubles as the model's own cross-check cue: what it flagged,
@@ -466,8 +469,8 @@ function renderIntervals(){
 // the clip queue instead (see list()'s .clip-verdict), not on the video overlay.
 function updateLiveReadout(o){
  const el=$('liveReadout');if(!el)return;
- if(o)el.textContent=`Model: ${(o.confidence*100).toFixed(0)}% confidence this frame`;
- else if(hasVideo()&&ev()?.original)el.textContent='Model: no detection this frame';
+ if(o){el.textContent=`Confidence score: ${(o.confidence*100).toFixed(0)}%`;el.style.cssText='font-weight:700;font-size:13px;color:#f5f5f5;background:#00000080;padding:2px 8px;border-radius:4px';}
+ else if(hasVideo()&&ev()?.original){el.textContent='Confidence score: no detection this frame';el.style.cssText='font-weight:700;font-size:13px;color:#f5f5f5;background:#00000080;padding:2px 8px;border-radius:4px';}
  else el.textContent='';
 }
 function draw(){
@@ -628,8 +631,15 @@ $('saveReview').onclick=()=>{
  const c=current();if(!c)return;readDraft();
  const before=E.copy(c.review||null);
  c.review={...c.draft,savedAt:new Date().toISOString(),source:'human',inspectedTime:video.currentTime||0};
+ ev().audit.push({at:new Date().toISOString(),action:'save human review',source:'human',before,after:E.copy(c.review)});histories.delete(activeId);
+ // One incident, one steward verdict: apply the same decision to every
+ // clip (camera angle) of this incident, not just the one being watched.
+ const key=incidentKey(c);
+ if(key)for(const sib of state.clips)if(sib.id!==c.id&&incidentKey(sib)===key){
+  sib.draft={decision:c.draft.decision,notes:c.draft.notes};
+  sib.review={...sib.draft,savedAt:c.review.savedAt,source:'human',inspectedTime:null};
+ }
  const saved=persist();
- ev().audit.push({at:new Date().toISOString(),action:'save human review',source:'human',before,after:E.copy(c.review)});histories.delete(activeId);persist();
  if(saved)$('savedState').textContent='Saved locally · '+new Date(c.review.savedAt).toLocaleTimeString();
  list();renderMeasure();
  toast(saved?'Clip review saved. No penalty or model verdict issued.':'Review kept in memory. Export now to preserve it.');
@@ -676,20 +686,20 @@ function renderBetterModelBadge(c) {
  const fastOff = c.evidence.original.candidates.length > 0;
  const slowPrediction = c.betterModel.prediction;
  if (slowPrediction === null) {
-  el.textContent = 'Processed by: Fast + Accurate models — accurate model inconclusive, low confidence';
+  el.textContent = 'Processed by: Fast + Deep models — deep model inconclusive, low confidence';
   el.style.color = '#ffbd69';
  } else if (fastOff === slowPrediction) {
-  el.textContent = 'Processed by: Fast + Accurate models — agree, high confidence';
+  el.textContent = 'Processed by: Fast + Deep models — agree, high confidence';
   el.style.color = '#7df5c1';
  } else {
-  el.textContent = 'Processed by: Fast + Accurate models — disagree, low confidence';
+  el.textContent = 'Processed by: Fast + Deep models — disagree, low confidence';
   el.style.color = '#ffbd69';
  }
 }
 async function runBetterModelForCurrentClip() {
  const c = current();
  if (!c) return;
- if (!c.remoteClipId) { toast('This clip has no backend record to run the accurate model against.'); return; }
+ if (!c.remoteClipId) { toast('This clip has no backend record to run the deep model against.'); return; }
  $('betterModelClipName').textContent = c.name;
  $('betterModelLoading').hidden = false;
  $('betterModelResult').hidden = true;
@@ -701,13 +711,13 @@ async function runBetterModelForCurrentClip() {
  $('betterModelLoading').hidden = true;
  if (status.status === 'error') {
   $('betterModelError').hidden = false;
-  $('betterModelError').textContent = 'Could not get a result from the accurate model: ' +
+  $('betterModelError').textContent = 'Could not get a result from the deep model: ' +
    (status.result?.error || 'unknown error');
   return;
  }
  c.betterModel = status.result;
  $('betterModelResult').hidden = false;
- $('betterModelVerdict').textContent = 'Accurate model: ' + betterVerdictText(status.result.prediction);
+ $('betterModelVerdict').textContent = 'Deep model: ' + betterVerdictText(status.result.prediction);
  $('betterModelDetail').textContent =
   `${status.result.detections_decided} / ${status.result.detections_total} detections reached a decision` +
   (status.result.cars_seen > 1 ? ` · ${status.result.cars_seen} cars seen in this clip` : '') + '.';

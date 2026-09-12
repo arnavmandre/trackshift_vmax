@@ -23,7 +23,7 @@ AUTOLOAD_JS = REPO / 'VMAXPROTO' / 'autoload.js'
 MODEL2_ROOT = REPO / 'vmax_model2' / 'Track_limit_detection'
 BETTER_PYTHON = MODEL2_ROOT / '.venv_bench' / 'Scripts' / 'python.exe'
 BETTER_BRIDGE = MODEL2_ROOT / 'vmax_bridge.py'
-CONFIDENCE_ESCALATION_THRESHOLD = 0.75
+CONFIDENCE_ESCALATION_THRESHOLD = 0.80
 CLIP_ID_RE = re.compile(r'^[A-Za-z0-9_]+$')
 
 # Shared across every Handler instance (ThreadingHTTPServer makes a new one
