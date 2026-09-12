@@ -59,7 +59,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
    <div style="display:flex;gap:8px"><button id="prev" aria-label="Previous frame" title="Previous step (left arrow)" disabled>◀</button><button id="play" aria-label="Play video" title="Play / pause (Space)" disabled>▶</button><button id="next" aria-label="Next frame" title="Next step (right arrow)" disabled>▶▶</button></div>
    <span class="frame-readout" id="frame">Frame —</span><span class="time-readout" id="time">00:00.00</span>
    <label class="speed-control">Speed <input id="speed" type="range" min="0.1" max="2" step="0.1" value="0.4" aria-label="Playback speed"><output id="speedLabel">0.4×</output></label>
-   <label class="toggle" title="Preference saved; requires model output"><span>Tyre overlay</span><input id="tyreOverlay" type="checkbox" checked></label><label class="toggle" title="Preference saved; requires a calibrated boundary"><span>Boundary</span><input id="boundary" type="checkbox"></label>
+   <label class="toggle" title="Preference saved; requires model output"><span>Tyre overlay</span><input id="tyreOverlay" type="checkbox" checked></label>
   </div>
   <input type="range" class="seek" id="seek" min="0" max="1" step="0.001" value="0" aria-label="Seek video" disabled>
   <div class="stats"><div class="stat"><p>Mean confidence score</p><strong>—</strong></div><div class="stat"><p>Observations with a car</p><strong>—</strong></div><div class="stat"><p>Imported candidate windows</p><strong>—</strong></div></div>
@@ -90,7 +90,7 @@ dialog{background:var(--panel);color:var(--text);border:1px solid #48484e;border
 
   <div id="tab-measure" class="tabpanel" role="tabpanel" aria-labelledby="tabBtn-measure" hidden>
    <button class="primary" id="startGuided" style="width:100%" disabled>Measure this frame</button>
-   <p class="wb-help">Pauses the video here and walks through marking one frame: four tyre contacts, a boundary, then which side is legal. Nothing runs automatically — every mark is your click.</p>
+   <p class="wb-help">Pauses the video here and walks through marking one frame: drag a rectangle to zoom in on the tyres, then four tyre contacts, a boundary, and which side is legal. Nothing runs automatically — every mark is your click.</p>
    <div class="crop-view"><span id="cropEmpty">Tyre crop</span><canvas id="cropCanvas" width="520" height="260"></canvas><span class="crop-label" id="cropLabel" hidden>Manual crop · original pixels</span></div>
    <div class="crop-tools"><button class="link" id="selectCrop" disabled>Select crop manually</button><button class="link" id="clearCrop" hidden>Clear crop</button></div>
    <div class="model-block">
@@ -243,7 +243,7 @@ const api={validate,nearest,clearance,sideSign,demo,History,copy,tyres};root.VMA
 const $=id=>document.getElementById(id), video=$('video'), KEY='vmax-figma-steward-ui-v1';
 const E=VMAXEvidence;
 const urls=new Map();
-let state={schema:1,session:'Session 04',clips:[],preferences:{speed:.4,tyreOverlay:true,boundary:false}};
+let state={schema:1,session:'Session 04',clips:[],preferences:{speed:.4,tyreOverlay:true}};
 let activeId=null,filter='all',cropMode=false,dragStart=null,toastTimer,selectedMarker=null;
 let activeTab='review';
 let mode='inspect';           // 'inspect' | 'edit' | 'line' | 'guided'  (advanced-panel modes vs guided flow)
@@ -251,7 +251,7 @@ let selection=null,lastClip=null,lastTick=performance.now();
 let guided=null;              // {obsId, idx, order} while the guided flow is running
 const histories=new Map();
 
-try{const s=JSON.parse(localStorage.getItem(KEY));if(s?.schema===1&&Array.isArray(s.clips)){state=s;state.preferences={speed:.4,tyreOverlay:true,boundary:false,...s.preferences};}}catch{}
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s?.schema===1&&Array.isArray(s.clips)){state=s;state.preferences={speed:.4,tyreOverlay:true,...s.preferences};}}catch{}
 const labels={unreviewed:'Unreviewed',confirmed:'Off track',dismissed:'On track',insufficient:'Insufficient evidence'};
 const current=()=>state.clips.find(c=>c.id===activeId);
 const timeText=t=>{t=Number.isFinite(t)?t:0;const min=Math.floor(t/60),sec=t%60;return `${String(min).padStart(2,'0')}:${sec.toFixed(2).padStart(5,'0')}`;};
@@ -532,8 +532,9 @@ function liveCars(data,t){
 function fastOffTrackCars(c){return [...new Set((c?.evidence?.original?.candidates||[]).map(x=>x.car_id).filter(Boolean))].sort();}
 
 /* ---------- 7. Guided measuring flow ---------- */
-const GUIDED_ORDER=['FL','FR','RL','RR','boundary','side'];
+const GUIDED_ORDER=['crop','FL','FR','RL','RR','boundary','side'];
 const GUIDED_TEXT={
+ crop:['Zoom in on the tyres','Drag a rectangle around the tyre area. It is shown magnified in the Tyre crop box, so you can place each point precisely.'],
  FL:['Tyre 1 of 4','Click the front-left (FL) tyre contact point, or skip if it is hidden.'],
  FR:['Tyre 2 of 4','Click the front-right (FR) tyre contact point, or skip if it is hidden.'],
  RL:['Tyre 3 of 4','Click the rear-left (RL) tyre contact point, or skip if it is hidden.'],
@@ -544,8 +545,16 @@ const GUIDED_TEXT={
 function guidedBarShow(step){
  const [title,sub]=GUIDED_TEXT[step];
  $('guidedStep').textContent=title;$('guidedSub').textContent=sub;
- $('guidedSkip').hidden=!['FL','FR','RL','RR'].includes(step);
+ $('guidedSkip').hidden=!['crop','FL','FR','RL','RR'].includes(step);
+ $('guidedSkip').textContent=step==='crop'?'Skip zoom':'Skip this tyre';
  $('guidedBar').hidden=false;
+}
+// Draws the rubber-band rectangle while dragging; `a` and `b` are 0..1 video fractions.
+function showCropSelection(a,b){
+ const r=videoRect(),stage=$('stage').getBoundingClientRect(),box=$('cropSelection');
+ box.style.display='block';
+ Object.assign(box.style,{left:r.left-stage.left+Math.min(a.x,b.x)*r.width+'px',top:r.top-stage.top+Math.min(a.y,b.y)*r.height+'px',
+  width:Math.abs(b.x-a.x)*r.width+'px',height:Math.abs(b.y-a.y)*r.height+'px'});
 }
 function guidedStart(){
  if(!hasVideo()){toast('Open a video and pause on the frame you want to measure first.');return;}
@@ -567,13 +576,14 @@ function guidedAdvance(){
 function guidedSkipTyre(){
  if(!guided)return;
  const step=GUIDED_ORDER[guided.idx];
+ if(step==='crop'){dragStart=null;$('cropSelection').style.display='none';guidedAdvance();return;}
  if(!['FL','FR','RL','RR'].includes(step))return;
  edit('mark '+step+' missing',v=>v.points[step]=null);
  guidedAdvance();
 }
 function guidedCancel(silent){
  if(!guided)return;
- guided=null;mode='inspect';$('guidedBar').hidden=true;
+ guided=null;mode='inspect';$('guidedBar').hidden=true;dragStart=null;
  if(!silent)toast('Measuring cancelled. Anything already marked was kept.');
  renderMeasure();update();
 }
@@ -586,6 +596,7 @@ function guidedPointerDown(e){
  if(!frameMatches()){toast('Seek back to the marked frame before placing points.');return;}
  const step=GUIDED_ORDER[guided.idx],p=pixel(e);
  if(!p.inside){toast('Click inside the video image.');return;}
+ if(step==='crop'){const f=point(e);dragStart={guidedCrop:true,x:f.x,y:f.y};return;}
  if(step==='boundary'){dragStart=p.xy;return;}
  if(step==='side'){
   const line=effective(selected()).line,sign=E.sideSign(line,p.xy);
@@ -600,6 +611,15 @@ function guidedPointerDown(e){
 }
 function guidedPointerUp(e){
  const step=GUIDED_ORDER[guided.idx],p=pixel(e);
+ if(step==='crop'){
+  if(!dragStart?.guidedCrop)return;
+  const a=dragStart,f=point(e);dragStart=null;$('cropSelection').style.display='none';
+  const x=Math.min(a.x,f.x),y=Math.min(a.y,f.y),w=Math.abs(f.x-a.x),h=Math.abs(f.y-a.y);
+  if(w<.01||h<.01){toast('Drag a larger rectangle around the tyres, or skip the zoom.');return;}
+  current().crop=[x,y,w,h];persist();update();
+  guidedAdvance();
+  return;
+ }
  if(step==='boundary'){
   if(!dragStart)return;
   const a=dragStart;dragStart=null;
@@ -642,7 +662,6 @@ $('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);$('seek').oninput=e
 $('speed').oninput=e=>{const s=Number(e.target.value);state.preferences.speed=s;video.playbackRate=s;$('speedLabel').textContent=s.toFixed(1)+'×';persist();};
 $('fps').onchange=()=>{const c=current(),v=Number($('fps').value);if(!Number.isFinite(v)||v<1||v>240){$('fps').value=c?.fps||25;toast('Enter a frame rate from 1 to 240.');return;}if(c)c.fps=v;persist();update();};
 $('tyreOverlay').onchange=()=>{state.preferences.tyreOverlay=$('tyreOverlay').checked;persist();draw();};
-$('boundary').onchange=()=>{state.preferences.boundary=$('boundary').checked;persist();toast('Preference saved. A calibrated boundary is not available yet.');};
 $('timeline').onclick=e=>{if(hasVideo()){const r=e.currentTarget.getBoundingClientRect();seek((e.clientX-r.left)/r.width*video.duration);}};
 $('selectCrop').onclick=()=>{cropMode=!cropMode;video.pause();update();};$('clearCrop').onclick=()=>{if(current())current().crop=null;persist();update();};
 $('stage').addEventListener('pointerdown',e=>{if(!cropMode||!hasVideo())return;const p=point(e);dragStart={crop:true,x:p.x,y:p.y};$('stage').setPointerCapture(e.pointerId);$('cropHint').hidden=true;});
@@ -853,7 +872,7 @@ function initOverlay(){
   else if(mode==='edit'){const pts=effective(selected()).points;let key=$('wbTyre').value,best=20*video.videoWidth/videoRect().width;for(const k of E.tyres)if(pts[k]){const d=Math.hypot(pts[k][0]-p[0],pts[k][1]-p[1]);if(d<best){key=k;best=d;}}dragStart={key,p};}
   canvas.setPointerCapture(e.pointerId);
  };
- canvas.onpointermove=e=>{e.stopPropagation();if(dragStart&&!dragStart.crop&&!guided){const p=pixel(e);if(p.inside)dragStart.p=p.xy;}};
+ canvas.onpointermove=e=>{e.stopPropagation();if(dragStart?.guidedCrop){showCropSelection(dragStart,point(e));return;}if(dragStart&&!dragStart.crop&&!guided){const p=pixel(e);if(p.inside)dragStart.p=p.xy;}};
  canvas.onpointerup=e=>{
   e.stopPropagation();
   if(guided){guidedPointerUp(e);return;}
@@ -903,7 +922,7 @@ setInterval(()=>{if(current())persist();},10000);
 /* init */
 initOverlay();
 $('sessionName').value=state.session;$('speed').value=state.preferences.speed;$('speedLabel').textContent=Number(state.preferences.speed).toFixed(1)+'×';
-$('tyreOverlay').checked=state.preferences.tyreOverlay;$('boundary').checked=state.preferences.boundary;
+$('tyreOverlay').checked=state.preferences.tyreOverlay;
 setTab('review');
 renderBookmarks();list();
 if(state.clips.length)openClip(state.clips[0].id);else{update();renderMeasure();updateStats();}
