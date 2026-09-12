@@ -1,6 +1,7 @@
 name: Train new pretrained tyre pose model
 on:
   push:
+    branches: ['main']
     paths: ['experiment.py', '.github/workflows/train-pose.yml', 'simulator/**', 'geometry.py']
   workflow_dispatch:
 permissions:

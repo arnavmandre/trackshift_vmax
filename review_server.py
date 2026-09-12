@@ -89,11 +89,16 @@ class Session:
               'coverage':len({f['frame'] for f in fs})/c['frames'],
               'boundary':boundary(c['calibration']['homography']) if self.manifest.get('dataset_kind')=='synthetic_fixed_vmax_corner' else [],
               'telemetry':{'samples':len(tel),'source':'Synthetic noisy position; not fused into model predictions'},
-              'candidate_count':sum(len(t['events']) for t in enriched)})
-        return {'clips':clips,'model_hash':self.selection.get('weights_sha256'),
+              'candidate_count':sum(len(t['events']) for t in enriched),
+              'family_id':c.get('family_id',c['id']),'angle_index':c.get('angle_index'),'angle_count':c.get('angle_count')})
+        incidents={}
+        for c in clips:incidents.setdefault(c['family_id'],[]).append(c['id'])
+        for ids in incidents.values():ids.sort(key=lambda cid:next(c['angle_index'] for c in clips if c['id']==cid) or 0)
+        return {'clips':clips,'incidents':incidents,'model_hash':self.selection.get('weights_sha256'),
                 'verification':self.verification,'metrics':self.evaluation,'model':'YOLO26 four-contact pose',
                 'threshold':self.selection.get('winner',{}).get('metrics',{}).get('threshold'),
-                'score_notice':'Detector scores are uncalibrated; they are not offence probabilities.'}
+                'score_notice':'Detector scores are uncalibrated; they are not offence probabilities.',
+                'angle_notice':'Multiple camera angles of the same incident share an entry in `incidents`; a clip counts as caught if any of its angles caught it.'}
 
 class Handler(BaseHTTPRequestHandler):
     def __init__(self,*args,session,**kwargs):self.session=session;super().__init__(*args,**kwargs)

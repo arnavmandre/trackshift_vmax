@@ -3,6 +3,12 @@
 Uses the existing VMAX corner and assets. Camera/trajectory/appearance diversity
 is not unseen-track or unseen-asset generalization. CPU backend is deliberately
 low fidelity; OpenGL retains the v2 renderer. Neither is photorealistic.
+
+Each incident is rendered from a ring of cameras spaced evenly around it (a
+360-degree view of the same event, not one random angle), so a boundary call
+can be checked against whichever angle actually sees the tyre. All angles of
+one incident share `family_id` and the same trajectory/ground truth; only the
+camera differs.
 """
 from __future__ import annotations
 import argparse
@@ -17,9 +23,11 @@ import geometry as g
 from .evidence import sha256
 
 
-def make_specs(count, seed, fps=24, seconds=3, width=640, height=360):
+def make_specs(count, seed, fps=24, seconds=3, width=640, height=360, angles=6):
     if count < 1 or fps < 1 or seconds <= 0 or width < 64 or height < 64 or width%2 or height%2:
         raise ValueError('count/fps/duration positive; dimensions even and at least 64')
+    if angles < 1:
+        raise ValueError('angles must be at least 1')
     out=[]
     for i in range(count):
         family=hashlib.sha256(f'vmax-scene-v4:{seed}:{i}'.encode()).hexdigest()
@@ -27,13 +35,12 @@ def make_specs(count, seed, fps=24, seconds=3, width=640, height=360):
         # Assignment precedes rendering; all derivatives inherit the family.
         split=['train','validation','test'][0 if int(family[-8:],16)%100<70 else (1 if int(family[-8:],16)%100<85 else 2)]
         out.append(dict(id=family[:16],family_id=family,split=split,seed=int(family[:8],16),
-            fps=fps,frames=max(3,round(seconds*fps)),width=width,height=height,
+            fps=fps,frames=max(3,round(seconds*fps)),width=width,height=height,angles=angles,
             speed_mps=float(rng.uniform(8,22)),start_s=float(rng.uniform(8,18)),
             offset_base_m=float(rng.uniform(3,6.5)),offset_peak_m=float(rng.uniform(6.8,9.2)),
             excursion_centre=float(rng.uniform(.3,.7)),excursion_width=float(rng.uniform(.05,.25)),
             cars=int(rng.choice([1,2])),same_livery=bool(rng.random()<.3),
-            camera_position=[float(rng.uniform(52,70)),float(rng.uniform(-28,-12)),float(rng.uniform(10,22))],
-            camera_target=[25,18,0],fov=float(rng.uniform(42,65)),
+            ring_radius=float(rng.uniform(16,24)),ring_height=float(rng.uniform(5,9)),ring_fov=float(rng.uniform(45,60)),
             colours=rng.integers(25,235,(2,3)).tolist(),brightness=float(rng.uniform(.7,1.2)),
             blur_px=float(rng.choice([0,0,.4,.8])),noise_sigma=float(rng.uniform(0,3)),
             crf=int(rng.integers(18,30)),telemetry_sigma_m=1.5,telemetry_latency_s=.15))
@@ -41,8 +48,18 @@ def make_specs(count, seed, fps=24, seconds=3, width=640, height=360):
         midpoint = spec['start_s'] + spec['speed_mps'] * (spec['frames']-1) / (2*spec['fps'])
         centre, normal = g.center(midpoint)
         aim = centre - normal * 6
-        spec['camera_target'] = [float(aim[0]),float(aim[1]),0.0]
+        spec['incident_centre'] = [float(aim[0]), float(aim[1]), 0.0]
     return out
+
+
+def ring_cameras(incident_id, target, count, radius, height, fov):
+    """A 360-degree ring of `count` cameras spaced evenly in azimuth around `target`."""
+    cams=[]
+    for k in range(count):
+        theta = 2*math.pi*k/count
+        pos = [target[0]+radius*math.cos(theta), target[1]+radius*math.sin(theta), height]
+        cams.append(g.camera(f'{incident_id}_a{k:02d}', pos, target, fov))
+    return cams
 
 
 def trajectory(spec):
@@ -71,15 +88,51 @@ def trajectory(spec):
     return sorted(allrows,key=lambda r:(r['frame_idx'],r['car_id'])),travel
 
 
-def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,backend='cpu',plan_only=False):
+def _render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng):
+    cid=cam['name'];folder=dest/cid;folder.mkdir()
+    width,height=spec['width'],spec['height']
+    main_rows=[row for row in rows if row['car_id']=='car_1']
+    world=np.array([[*row['world_position'],0] for row in main_rows])
+    uv,depth=g.project(world,cam)
+    visible=(depth>.5)&(uv[:,0]>=0)&(uv[:,0]<width)&(uv[:,1]>=0)&(uv[:,1]<height)
+    coverage=float(visible.mean())
+    if coverage<.5:
+        raise ValueError(f'incident {spec["id"]} angle {cid} has insufficient projected car coverage ({coverage:.0%}); adjust the ring radius/height or use another seed')
+    if not renderer:
+        base=g.render(track,cam);meshes=[g.car_mesh(tuple(c)) for c in colours]
+    video=folder/'original.mp4'
+    cmd=['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{width}x{height}','-r',str(spec['fps']),'-i','-','-an','-c:v','libx264','-preset','fast','-crf',str(spec['crf']),'-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
+    proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
+    try:
+        for i,current in byframe.items():
+            if renderer:
+                im=renderer.frame(cam,current,[d[i] for d in travel])
+            else:
+                mesh=[]
+                for ci,row in enumerate(current):
+                    c,s=np.cos(row['heading_rad']),np.sin(row['heading_rad']);rot=np.array([[c,-s,0],[s,c,0],[0,0,1]])
+                    mesh.extend((vertices@rot.T+[*row['world_position'],0],col) for vertices,col in meshes[ci])
+                im=Image.fromarray(g.render(mesh,cam,base)[0])
+            im=ImageEnhance.Brightness(im).enhance(spec['brightness'])
+            if spec['blur_px']:im=im.filter(ImageFilter.GaussianBlur(spec['blur_px']))
+            pixels=np.asarray(im).astype(float)+rng.normal(0,spec['noise_sigma'],(height,width,3))
+            pixels=np.clip(pixels,0,255).astype('uint8');proc.stdin.write(pixels.tobytes())
+            if i==spec['frames']//2:Image.fromarray(pixels).save(folder/'thumbnail.jpg')
+    finally:
+        proc.stdin.close()
+        if proc.wait()!=0:raise RuntimeError('FFmpeg failed to encode scene')
+    return video,coverage
+
+
+def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,backend='cpu',plan_only=False,angles=6):
     dest=Path(destination)
     if (dest/'manifest.json').exists() or (dest/'sealed'/'labels.json').exists():
         raise ValueError('destination already contains a dataset; choose a new directory')
     dest.mkdir(parents=True,exist_ok=True); (dest/'sealed').mkdir(exist_ok=True)
-    specs=make_specs(count,seed,fps,seconds,width,height)
+    specs=make_specs(count,seed,fps,seconds,width,height,angles)
     (dest/'sealed'/'scenes.json').write_text(json.dumps(specs,indent=2))
     if plan_only:
-        print(f'{count} reproducible scene specifications written; videos not rendered')
+        print(f'{count} incidents x {angles} angles reproducible; videos not rendered')
         return
     g.W,g.H=width,height
     renderer=None
@@ -88,63 +141,36 @@ def generate(destination,count=10,seed=0,fps=24,seconds=3,width=640,height=360,b
         r.WIDTH,r.HEIGHT=width,height;g.W,g.H=width,height
         renderer=r.Renderer()
     track=g.track_mesh() if renderer is None else None
-    manifest={'schema_version':1,'dataset_kind':'synthetic_fixed_vmax_corner','seed':seed,
+    manifest={'schema_version':2,'dataset_kind':'synthetic_fixed_vmax_corner','seed':seed,'angles':angles,
               'limitations':['same track and vehicle geometry as development set','not a real-footage benchmark'], 'clips':[]}
     truth={'schema_version':1,'clips':{}}
     for k,spec in enumerate(specs):
-        rng=np.random.default_rng(spec['seed']); cid=spec['id']; folder=dest/cid;folder.mkdir()
+        rng=np.random.default_rng(spec['seed']); tel_rng=np.random.default_rng(spec['seed']+1)
         rows,travel=trajectory(spec)
-        cam=g.camera(cid,spec['camera_position'],spec['camera_target'],spec['fov']);cam['fps']=fps
-        main_rows=[row for row in rows if row['car_id']=='car_1']
-        world=np.array([[*row['world_position'],0] for row in main_rows])
-        uv,depth=g.project(world,cam)
-        visible=(depth>.5)&(uv[:,0]>=0)&(uv[:,0]<width)&(uv[:,1]>=0)&(uv[:,1]<height)
-        coverage=float(visible.mean())
-        if coverage<.5:
-            raise ValueError(f'scene {cid} has insufficient projected car coverage ({coverage:.0%}); use another seed or shorter duration')
-        byframe={i:[row for row in rows if row['frame_idx']==i] for i in range(spec['frames'])}
         colours=spec['colours']; colours[1]=colours[0] if spec['same_livery'] else colours[1]
-        if renderer:
-            for obj in renderer.bodies:
-                for handle in obj:handle.release()
-            renderer.bodies=[renderer.upload(r.body(tuple(col))) for col in colours]
-        else:
-            base=g.render(track,cam);meshes=[g.car_mesh(tuple(c)) for c in colours]
-        video=folder/'original.mp4'
-        cmd=['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s',f'{width}x{height}','-r',str(fps),'-i','-','-an','-c:v','libx264','-preset','fast','-crf',str(spec['crf']),'-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
-        proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
-        try:
-            for i,current in byframe.items():
-                if renderer:
-                    im=renderer.frame(cam,current,[d[i] for d in travel])
-                else:
-                    mesh=[]
-                    for ci,row in enumerate(current):
-                        c,s=np.cos(row['heading_rad']),np.sin(row['heading_rad']);rot=np.array([[c,-s,0],[s,c,0],[0,0,1]])
-                        mesh.extend((vertices@rot.T+[*row['world_position'],0],col) for vertices,col in meshes[ci])
-                    im=Image.fromarray(g.render(mesh,cam,base)[0])
-                im=ImageEnhance.Brightness(im).enhance(spec['brightness'])
-                if spec['blur_px']:im=im.filter(ImageFilter.GaussianBlur(spec['blur_px']))
-                pixels=np.asarray(im).astype(float)+rng.normal(0,spec['noise_sigma'],(height,width,3))
-                pixels=np.clip(pixels,0,255).astype('uint8');proc.stdin.write(pixels.tobytes())
-                if i==spec['frames']//2:Image.fromarray(pixels).save(folder/'thumbnail.jpg')
-        finally:
-            proc.stdin.close()
-            if proc.wait()!=0:raise RuntimeError('FFmpeg failed to encode scene')
-        # Telemetry is noisy context, separate from private exact labels.
+        byframe={i:[row for row in rows if row['frame_idx']==i] for i in range(spec['frames'])}
         tel=[]
         for row in rows:
-            if row['frame_idx']%max(1,round(fps/5))==0 and rng.random()>.1:
+            if row['frame_idx']%max(1,round(fps/5))==0 and tel_rng.random()>.1:
                 tel.append(dict(time_s=row['time_s']+.15,car_id=row['car_id'],
-                    position_m=(np.array(row['world_position'])+rng.normal(0,1.5,2)).tolist(),
+                    position_m=(np.array(row['world_position'])+tel_rng.normal(0,1.5,2)).tolist(),
                     sigma_m=1.5,source='synthetic noisy position',latency_s=.15))
-        (folder/'telemetry.json').write_text(json.dumps(tel))
-        entry=dict(id=cid,family_id=spec['family_id'],split=spec['split'],video=f'{cid}/original.mp4',
-            video_sha256=sha256(video),fps=fps,frames=spec['frames'],projected_primary_centre_coverage=coverage,thumbnail=f'{cid}/thumbnail.jpg',
-            calibration={'homography':cam['ground_plane_homography'],'sigma_m':0.0,'source':'exact synthetic camera; oracle benchmark'},
-            camera_spec=cam,telemetry=f'{cid}/telemetry.json')
-        manifest['clips'].append(entry);truth['clips'][cid]={'frames':rows,'video_sha256':entry['video_sha256']}
-        print(f'{k+1}/{count} {cid} {spec["split"]}',flush=True)
+        telemetry_path=f'{spec["id"]}_telemetry.json'
+        (dest/telemetry_path).write_text(json.dumps(tel))
+        if renderer:
+            renderer.bodies=[renderer.upload(r.body(tuple(col))) for col in colours]
+        cams=ring_cameras(spec['id'],spec['incident_centre'],spec['angles'],spec['ring_radius'],spec['ring_height'],spec['ring_fov'])
+        for cam in cams:
+            cam['fps']=fps
+            video,coverage=_render_angle(cam,rows,byframe,travel,colours,track,renderer,spec,dest,rng)
+            cid=cam['name']
+            entry=dict(id=cid,family_id=spec['family_id'],split=spec['split'],video=f'{cid}/original.mp4',
+                video_sha256=sha256(video),fps=fps,frames=spec['frames'],projected_primary_centre_coverage=coverage,
+                thumbnail=f'{cid}/thumbnail.jpg',angle_index=int(cid.rsplit("_a",1)[1]),angle_count=spec['angles'],
+                calibration={'homography':cam['ground_plane_homography'],'sigma_m':0.0,'source':'exact synthetic camera; oracle benchmark'},
+                camera_spec=cam,telemetry=telemetry_path)
+            manifest['clips'].append(entry);truth['clips'][cid]={'frames':rows,'video_sha256':entry['video_sha256']}
+        print(f'{k+1}/{count} {spec["id"]} {spec["split"]} ({spec["angles"]} angles)',flush=True)
     (dest/'manifest.json').write_text(json.dumps(manifest,indent=2))
     (dest/'sealed'/'labels.json').write_text(json.dumps(truth))
     return manifest
@@ -155,7 +181,8 @@ def main(argv=None):
     p.add_argument('--out',required=True);p.add_argument('--count',type=int,default=10);p.add_argument('--seed',type=int,default=0)
     p.add_argument('--fps',type=int,default=24);p.add_argument('--seconds',type=float,default=3)
     p.add_argument('--width',type=int,default=640);p.add_argument('--height',type=int,default=360)
+    p.add_argument('--angles',type=int,default=6,help='cameras spaced around the 360-degree ring per incident')
     p.add_argument('--backend',choices=['cpu','opengl'],default='cpu');p.add_argument('--plan-only',action='store_true')
-    a=p.parse_args(argv);generate(a.out,a.count,a.seed,a.fps,a.seconds,a.width,a.height,a.backend,a.plan_only)
+    a=p.parse_args(argv);generate(a.out,a.count,a.seed,a.fps,a.seconds,a.width,a.height,a.backend,a.plan_only,a.angles)
 
 if __name__=='__main__':main()

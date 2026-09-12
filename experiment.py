@@ -15,7 +15,7 @@ from scipy.optimize import linear_sum_assignment
 
 OUT=Path('experiment_out')
 PLAN={'model':'yolo26n-pose.pt','epochs':20,'imgsz':416,'batch':8,'seed':12092026,
-      'frame_stride':4,'thresholds':[.15,.3,.5],'blind_seed':2026091207,'blind_count':40,
+      'frame_stride':4,'thresholds':[.15,.3,.5],'blind_seed':2026091207,'blind_count':40,'blind_angles':4,
       'selection':'highest validation event F1, then lower margin P95',
       'keypoints':['front_left','front_right','rear_left','rear_right'],
       'initialization':'official COCO pretrained pose weights; no earlier VMAX weights',
@@ -110,14 +110,18 @@ def prepare(root):
 def train():
     import torch
     from ultralytics import YOLO
-    torch.set_num_threads(2)
+    device='cuda' if torch.cuda.is_available() else 'cpu'
+    if device=='cpu':torch.set_num_threads(2)
     model=YOLO(PLAN['model'])
-    save(OUT/'initialization.json',{'checkpoint':PLAN['model'],'sha256':digest(PLAN['model'])})
+    save(OUT/'initialization.json',{'checkpoint':PLAN['model'],'sha256':digest(PLAN['model']),
+        'device':device,'gpu':torch.cuda.get_device_name(0) if device=='cuda' else None})
+    # Same fixed hyperparameters (epochs/imgsz/batch/seed) regardless of device; only
+    # execution (device/workers/amp) adapts, so a local GPU run stays comparable to CI's.
     model.train(data=str(OUT/'dataset.yaml'),epochs=PLAN['epochs'],imgsz=PLAN['imgsz'],
-        batch=PLAN['batch'],device='cpu',workers=0,seed=PLAN['seed'],deterministic=True,
+        batch=PLAN['batch'],device=device,workers=(4 if device=='cuda' else 0),seed=PLAN['seed'],deterministic=True,
         optimizer='AdamW',lr0=.001,lrf=.05,patience=20,pretrained=True,
         mosaic=.3,close_mosaic=5,mixup=0,fliplr=0,flipud=0,degrees=5,translate=.1,
-        scale=.3,perspective=0,hsv_h=.1,hsv_s=.4,hsv_v=.3,amp=False,cache=False,
+        scale=.3,perspective=0,hsv_h=.1,hsv_s=.4,hsv_v=.3,amp=(device=='cuda'),cache=False,
         project=str(OUT.resolve()),name='training',exist_ok=False,plots=False,save=True,verbose=False)
     actual=Path(model.trainer.save_dir)
     expected=OUT/'training'
@@ -152,6 +156,32 @@ def predict(root,split,weights,out):
     save(str(out)+'.receipt.json',{'predictions_sha256':digest(out),'manifest_sha256':digest(root/'manifest.json'),
          'weights_sha256':digest(weights),'split':split,'seconds':time.time()-start,'labels_read':False})
     return records
+
+
+def smooth_track(track):
+    """Constant-velocity Kalman smoother over one track's per-frame margin, plus the
+    sub-frame instant its smoothed path crosses the boundary. Same idea tennis line
+    calling uses (reconstruct the ball's trajectory rather than trust one noisy frame)
+    applied to the car's estimated clearance instead of a single detection.
+    Adds smoothed_margin_m/boundary_crossing_frame; leaves margin_m (the raw per-frame
+    estimate) untouched so test_experiment.py's exact-recovery check still holds."""
+    frames=[f['frame'] for f in track];z=[f['margin_m'] for f in track]
+    x=np.array([z[0],0.]);P=np.eye(2)
+    est=[];prev=frames[0]
+    for fr,m in zip(frames,z):
+        dt=max(fr-prev,1);prev=fr
+        F=np.array([[1.,dt],[0.,1.]]);Q=.02*np.array([[dt**3/3,dt**2/2],[dt**2/2,dt]])
+        x=F@x;P=F@P@F.T+Q
+        y=m-x[0];S=P[0,0]+.01;K=P[:,0]/S
+        x=x+K*y;P=P-np.outer(K,P[0])
+        est.append(float(x[0]))
+    crossing=None
+    for a,b,fa,fb in zip(est,est[1:],frames,frames[1:]):
+        if (a<=0)!=(b<=0):
+            crossing=fa+(fb-fa)*(a/(a-b) if a!=b else .5);break
+    for f,val in zip(track,est):
+        f['smoothed_margin_m']=val;f['boundary_crossing_frame']=crossing
+    return track
 
 
 def groups(frames):
@@ -202,7 +232,7 @@ def observations(c,raw,threshold):
                 if costs[r,k]<=6:tracks[active[r]].append(candidates[k]);used.add(k)
         for k,v in enumerate(candidates):
             if k not in used:tracks.append([v])
-    return tracks
+    return [smooth_track(t) for t in tracks]
 
 
 def score(root,split,predictions,threshold,out):
@@ -214,14 +244,14 @@ def score(root,split,predictions,threshold,out):
     raw=json.loads(Path(predictions).read_text());pool=[c for c in m['clips'] if c['split']==split]
     if set(raw)!={c['id'] for c in pool}:raise ValueError('incomplete prediction coverage')
     truth=json.loads((root/'sealed/labels.json').read_text())['clips']
-    rows=[];errors=[];review={}
+    rows=[];errors=[];serrors=[];review={}
     for c in pool:
         gt=truth[c['id']]
         if gt['video_sha256']!=c['video_sha256']:raise ValueError('wrong truth video')
         bycar={}
         for f in gt['frames']:bycar.setdefault(f['car_id'],{})[f['frame_idx']]=f
         events=[(car,ab) for car,fs in bycar.items() for ab in groups(i for i,f in fs.items() if f['footprint_is_violation'])]
-        tracks=observations(c,raw[c['id']],threshold);pred=[];err=[];seen=set()
+        tracks=observations(c,raw[c['id']],threshold);pred=[];err=[];serr=[];seen=set()
         for t in tracks:
             costs={car:float(np.mean([np.linalg.norm(np.array(f['position'])-fs[f['frame']]['world_position'])
                        for f in t if f['frame'] in fs])) for car,fs in bycar.items()}
@@ -231,30 +261,53 @@ def score(root,split,predictions,threshold,out):
                 for f in t:
                     if f['frame'] in bycar[car]:
                         err.append(abs(f['margin_m']-bycar[car][f['frame']]['footprint_margin_m']))
+                        serr.append(abs(f['smoothed_margin_m']-bycar[car][f['frame']]['footprint_margin_m']))
                         seen.add((car,f['frame']))
-            pred.extend((car,ab) for ab in groups(f['frame'] for f in t if f['margin_m']>0))
+            # Trajectory-smoothed margin decides events, not one noisy frame's raw estimate.
+            pred.extend((car,ab) for ab in groups(f['frame'] for f in t if f['smoothed_margin_m']>0))
         pairs=sorted([(overlap(p[1],g[1]),pi,gi) for pi,p in enumerate(pred) for gi,g in enumerate(events) if p[0]==g[0]],reverse=True)
         pp=set();gg=set()
         for value,pi,gi in pairs:
             if value>=.3 and pi not in pp and gi not in gg:pp.add(pi);gg.add(gi)
-        rows.append({'clip':c['id'],'truth_events':len(events),'matched':len(pp),'false_reports':len(pred)-len(pp),
+        rows.append({'clip':c['id'],'family_id':c.get('family_id',c['id']),'angle_index':c.get('angle_index'),
+                     'truth_events':len(events),'matched':len(pp),'false_reports':len(pred)-len(pp),
                      'misses':len(events)-len(gg),'coverage':len(seen)/max(len(gt['frames']),1),
-                     'margin_mae_m':float(np.mean(err)) if err else None})
-        errors+=err;review[c['id']]=tracks
+                     'margin_mae_m':float(np.mean(err)) if err else None,
+                     'margin_mae_smoothed_m':float(np.mean(serr)) if serr else None})
+        errors+=err;serrors+=serr;review[c['id']]=tracks
     tp=sum(r['matched'] for r in rows);fp=sum(r['false_reports'] for r in rows);fn=sum(r['misses'] for r in rows)
     p=tp/(tp+fp) if tp+fp else 0;r=tp/(tp+fn) if tp+fn else 0
     summary={'clips':len(rows),'true_positives':tp,'false_reports':fp,'missed_events':fn,
              'precision':p if tp+fp else None,'recall':r if tp+fn else None,'f1':2*p*r/(p+r) if p+r else 0,
              'margin_p50_m':float(np.median(errors)) if errors else None,
-             'margin_p95_m':float(np.percentile(errors,95)) if errors else None,'threshold':threshold,
+             'margin_p95_m':float(np.percentile(errors,95)) if errors else None,
+             'margin_p50_smoothed_m':float(np.median(serrors)) if serrors else None,
+             'margin_p95_smoothed_m':float(np.percentile(serrors,95)) if serrors else None,'threshold':threshold,
              'labels_sha256':digest(root/'sealed/labels.json'),'prediction_sha256':digest(predictions),
              'scope':'synthetic fixed-corner, exact camera; evaluator-only trajectory association; temporal IoU >= 0.3',
              'confidence':'uncalibrated model scores; not incident probabilities'}
-    save(Path(out)/'evaluation.json',{'summary':summary,'clips':rows})
+    # Multi-angle consensus: fuse each incident's camera angles into one decision.
+    # An incident counts matched if its best angle caught the event; confidence is
+    # the fraction of angles that agree, surfaced to the steward alongside the score.
+    by_family={}
+    for row in rows:by_family.setdefault(row['family_id'],[]).append(row)
+    incidents=[{'family_id':fam,'angles':len(mem),
+                'angles_agreeing':sum(1 for x in mem if x['matched']>0),
+                'truth_events':mem[0]['truth_events'],'matched':max(x['matched'] for x in mem),
+                'false_reports':min(x['false_reports'] for x in mem),
+                'confidence':sum(1 for x in mem if x['matched']>0)/len(mem)} for fam,mem in by_family.items()]
+    ctp=sum(x['matched'] for x in incidents);cfp=sum(x['false_reports'] for x in incidents)
+    cfn=sum(x['truth_events']-x['matched'] for x in incidents)
+    cp=ctp/(ctp+cfp) if ctp+cfp else 0;cr=ctp/(ctp+cfn) if ctp+cfn else 0
+    consensus_summary={'incidents':len(incidents),'true_positives':ctp,'false_reports':cfp,'missed_events':cfn,
+             'precision':cp if ctp+cfp else None,'recall':cr if ctp+cfn else None,'f1':2*cp*cr/(cp+cr) if cp+cr else 0,
+             'note':'an incident is matched if ANY of its camera angles caught the event; confidence is the fraction of angles that agree'}
+    save(Path(out)/'evaluation.json',{'summary':summary,'clips':rows,'consensus_summary':consensus_summary,'incidents':incidents})
     with (Path(out)/'clips.csv').open('w',newline='') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
     save(Path(out)/'review_tracks.json',review)
     print(json.dumps(summary),flush=True)
+    print('CONSENSUS',json.dumps(consensus_summary),flush=True)
     return summary
 
 
@@ -277,7 +330,8 @@ def final_test():
     if digest(weights)!=selection['weights_sha256']:raise ValueError('selected model changed')
     blind=OUT/'fresh_blind'
     subprocess.run([sys.executable,'-m','simulator.generate','--out',str(blind),'--count',str(PLAN['blind_count']),
-                    '--seed',str(PLAN['blind_seed']),'--fps','12','--seconds','2','--width','480','--height','270'],check=True)
+                    '--seed',str(PLAN['blind_seed']),'--fps','12','--seconds','2','--width','480','--height','270',
+                    '--angles',str(PLAN['blind_angles'])],check=True)
     m=json.loads((blind/'manifest.json').read_text())
     development=json.loads((OUT/'dataset_provenance.json').read_text())
     used=set(development['train_families']+development['validation_families'])

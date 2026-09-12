@@ -12,11 +12,11 @@ class Checks(unittest.TestCase):
         self.assertEqual(groups([1,2,4,7]),[(1,2),(4,4),(7,7)])
         self.assertAlmostEqual(overlap((1,3),(2,4)),.5)
     def test_perfect_simulator_contacts(self):
-        from simulator.generate import make_specs,trajectory
+        from simulator.generate import make_specs,ring_cameras,trajectory
         import geometry as g
-        spec=make_specs(1,1207,12,2,480,270)[0]
+        spec=make_specs(1,1207,12,2,480,270,angles=6)[0]
         g.W,g.H=480,270
-        cam=g.camera(spec['id'],spec['camera_position'],spec['camera_target'],spec['fov'])
+        cam=ring_cameras(spec['id'],spec['incident_centre'],spec['angles'],spec['ring_radius'],spec['ring_height'],spec['ring_fov'])[0]
         rows,_=trajectory(spec)
         raw=[]
         for f in rows:

@@ -1,6 +1,7 @@
 name: Steward console and training handoff
 on:
   push:
+    branches: ['main']
     paths: ['review_server.py', 'steward_ui/**', 'test_review*', 'review_fixture.py', '.github/workflows/complete-review.yml']
   workflow_run:
     workflows: ['Train new pretrained tyre pose model']

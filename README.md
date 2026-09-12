@@ -22,6 +22,25 @@ claim to have invented YOLO or its pretrained backbone.
 seed 12092026; learning rate 0.001; validation thresholds 0.15, 0.3 and 0.5.
 The old 40 test clips are not used for model selection or this final evaluation.
 
+## Multi-angle capture and trajectory smoothing
+
+Each simulated incident is now rendered from a 360-degree ring of cameras around
+it (`--angles`, default 6; the fresh blind test uses 4) instead of one random
+angle, so a boundary call isn't decided by whichever single camera happened to
+be watching. All angles of one incident share `family_id` and the same ground
+truth; only the camera differs, and they're kept together in the same
+train/validation/test split. `experiment.py score` fuses the angles into a
+per-incident decision (an incident counts as caught if any angle caught it) and
+reports a `consensus_summary`/`incidents` block alongside the per-angle metrics,
+with a `confidence` value equal to the fraction of angles that agree.
+
+Per-track margins are also smoothed with a constant-velocity Kalman filter
+(`smooth_track` in `experiment.py`) — the same idea tennis line-calling uses,
+reconstructing the trajectory instead of trusting one noisy frame — and used to
+find the sub-frame instant a track's estimated clearance crosses the boundary.
+The raw per-frame margin is kept alongside it (`margin_m` vs `smoothed_margin_m`)
+so smoothing's effect is visible rather than silently replacing the measurement.
+
 ## Execution and results
 
 The Actions workflow “Train new pretrained tyre pose model” installs CPU training
@@ -35,7 +54,8 @@ and 64.7% recall belong to the previous model, not this one. Comparisons on
 unequal datasets or different tracking implementations are not a controlled
 architecture comparison.
 
-For a local run with Python 3.12, FFmpeg and the prepared development folder:
+For a local run with Python 3.12, FFmpeg and the prepared development folder,
+on CPU:
 
 ```bash
 python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
@@ -46,6 +66,14 @@ python experiment.py train
 python experiment.py select --data data/development
 python experiment.py test
 ```
+
+`experiment.py train` auto-detects an available CUDA GPU (`torch.cuda.is_available()`)
+and switches `device`/`workers`/`amp` accordingly — the epoch/batch/imgsz/seed
+hyperparameters are unchanged either way, so a local GPU run stays comparable
+to a CPU/CI run, just faster. For a CUDA machine, install a matching
+CUDA build of torch instead of the CPU wheel above (check `nvidia-smi` for the
+driver's CUDA version and use the matching `--index-url`, e.g.
+`https://download.pytorch.org/whl/cu124`), then run the same commands.
 
 Use a fresh `experiment_out` directory per experiment. Installed dependency
 versions, initial pretrained checkpoint hash and selected checkpoint hash are
