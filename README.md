@@ -105,9 +105,38 @@ Read these numbers with care:
 - **The fast model never abstains.** It has no "sent for review" outcome, so its
   accuracy is not directly comparable to the deep model's figures, which count
   abstentions as failures.
-- **The deep model has not been evaluated on these clips.** It gives plausible
-  verdicts, but its accuracy on this simulator's footage is unmeasured. Treat its
-  output as a second opinion, not a benchmarked result.
+- **The deep model has not been evaluated on these clips.** Its own results
+  (below) come from its own test suite, so they don't show how it performs on
+  the fast model's clips.
+
+### Deep model results
+
+These results come from the deep model's own held-out test suite
+(`vmax_model2/Track_limit_detection/data/expanded_v1`). The suite has 24 clips
+covering 8 trajectories, each filmed from 3 fixed cameras at 1280×720 and 24 fps.
+None of these clips were used for training.
+
+| Metric | Result |
+|---|---|
+| Single-camera accuracy | **85.03%** across 1,029 frames where the car is in view |
+| Three-camera accuracy | **97.14%** across 384 synchronized three-camera examples |
+| Three-camera outcomes | 373 correct, 1 wrong, 10 sent for review |
+| Time per three-camera decision | 0.218 s on an RTX 4060 |
+| Time for a full 2 s clip from 3 cameras | 9.7 s, including video decoding |
+
+In both accuracy figures, **"sent for review" counts as a failure**: when the model
+declines to decide, it did not produce a result. Its three-camera rule is
+cautious. If any of the cameras that do give a verdict disagree, the example
+goes to review rather than to a majority vote.
+
+The fast and deep results are **not directly comparable**:
+
+- **Different test sets, cameras and hardware.** The fast model was tested on
+  4 cameras on an RTX 5060; the deep model on 3 cameras on an RTX 4060.
+- **Different units.** The fast model is scored per clip, on whether it caught the
+  excursion. The deep model is scored per frame.
+- **Different handling of uncertainty.** The deep model can abstain, and each
+  abstention counts against it. The fast model always commits to a decision.
 
 ## The steward UI
 
@@ -246,8 +275,9 @@ These are visual demos, not accuracy benchmarks.
   0.40 confidence, below its 0.5 threshold.
 - **Confidence scores are not probabilities.** They are uncalibrated detector
   outputs, not the probability of an offence.
-- **The deep model's accuracy on these clips is unmeasured.** It is also trained on
-  a separate synthetic set.
+- **The deep model's accuracy on these clips is unmeasured.** Its 85.03% and 97.14%
+  figures come from its own separate synthetic test suite, not from the fast
+  model's clips.
 - **The deep model depends on the fast model to find the car.** Its crop comes
   from the fast model's tyre points. Escalated clips are the ones where those
   points are least reliable. When the crop is poor, the deep model abstains rather
