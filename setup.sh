@@ -9,6 +9,9 @@
 #   vmax_model2/Track_limit_detection/.venv_bench deep model
 set -euo pipefail
 cd "$(dirname "$0")"
+# Copy instead of hardlinking from uv's cache: hardlinks fail inside cloud-synced
+# folders and across filesystems.
+export UV_LINK_MODE=copy
 
 CPU=0; SKIP_DEEP=0
 for arg in "$@"; do

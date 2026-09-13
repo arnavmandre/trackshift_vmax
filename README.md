@@ -19,7 +19,7 @@ The review server uses only the Python standard library. With any Python 3.12+
 installed, no packages, GPU or model weights are needed:
 
 ```bash
-git clone https://github.com/arnavmandre/trackshift_vmax
+git clone -c core.longpaths=true https://github.com/arnavmandre/trackshift_vmax
 cd trackshift_vmax
 python vmax_live_server.py
 ```
@@ -35,6 +35,8 @@ Server options: `--port 8010`, `--data <folder>` (defaults to `final_demo/`).
 
 Needed to run the models again, export new clips, use the **Run on deep model**
 button on new clips, or run the tests.
+
+On Windows, keep `-c core.longpaths=true` in the clone command: some model files sit in deep folders and a clone into a long path otherwise fails with "Filename too long".
 
 **Before you start:** install [Git LFS](https://git-lfs.com) *before cloning*
 (the deep model checkpoint is 128 MB and stored with LFS). The setup script runs

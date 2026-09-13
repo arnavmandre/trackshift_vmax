@@ -9,6 +9,9 @@
 param([switch]$Cpu, [switch]$SkipDeep)
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
+# Copy instead of hardlinking from uv's cache: hardlinks fail inside OneDrive
+# and other cloud-synced folders ("incompatible hardlinks", os error 396).
+$env:UV_LINK_MODE = 'copy'
 
 function Step($m) { Write-Host "`n==> $m" -ForegroundColor Cyan }
 function Warn($m) { Write-Host "WARNING: $m" -ForegroundColor Yellow }
