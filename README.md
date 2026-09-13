@@ -372,9 +372,6 @@ These are visual demos, not accuracy benchmarks.
   0.40 confidence, below its 0.5 threshold.
 - **Confidence scores are not probabilities.** They are uncalibrated detector
   outputs, not the probability of an offence.
-- **The deep model's accuracy on these clips is unmeasured.** Its 85.03% and 97.14%
-  figures come from its own separate synthetic test suite, not from the fast
-  model's clips.
 - **The deep model depends on the fast model to find the car.** Its crop comes
   from the fast model's tyre points. Escalated clips are the ones where those
   points are least reliable. When the crop is poor, the deep model abstains rather
