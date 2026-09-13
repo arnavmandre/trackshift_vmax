@@ -102,9 +102,14 @@ def better_worker_loop(data_dir):
             better_queue.task_done()
 
 
-def enqueue_better(data_dir, clip_id):
-    if not needs_deep_model(data_dir, clip_id):
+def enqueue_better(data_dir, clip_id, manual=False):
+    # Automatic escalation only sends low-confidence clips. A steward pressing
+    # "Run on deep model" asks for it explicitly, so any clip with fast-model
+    # predictions to crop from can run.
+    if not manual and not needs_deep_model(data_dir, clip_id):
         return 'skipped'
+    if not (data_dir / f'{clip_id}.json').is_file():
+        return 'no predictions'
     result_path = data_dir / f'{clip_id}.bettermodel.json'
     with better_jobs_lock:
         current = better_jobs.get(clip_id)
@@ -149,9 +154,7 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_error(400)
                     return
                 result_path = self.data_dir / f'{clip_id}.bettermodel.json'
-                if not needs_deep_model(self.data_dir, clip_id):
-                    payload = {'status': 'skipped', 'result': None}
-                elif result_path.is_file():
+                if result_path.is_file():
                     payload = json.loads(result_path.read_text())
                 else:
                     with better_jobs_lock:
@@ -178,7 +181,7 @@ class Handler(BaseHTTPRequestHandler):
             if not CLIP_ID_RE.match(clip_id):
                 self.send_error(400)
                 return
-            status = enqueue_better(self.data_dir, clip_id)
+            status = enqueue_better(self.data_dir, clip_id, manual=True)
             self.respond_bytes(json.dumps({'status': status}).encode(), 'application/json')
         else:
             self.send_error(404)

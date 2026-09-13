@@ -862,7 +862,7 @@ function renderBetterModelBadge(c) {
 async function runBetterModelForCurrentClip() {
  const c = current();
  if (!c) return;
- if (!c.remoteClipId) { toast('This clip has no backend record to run the deep model against.'); return; }
+ if (!c.remoteClipId) { toast('The deep model needs the fast model\'s results for this clip, and this clip has none. Open a clip from the queue that has been analysed.'); return; }
  $('betterModelClipName').textContent = c.name;
  $('betterModelLoading').hidden = false;
  $('betterModelResult').hidden = true;
@@ -871,8 +871,10 @@ async function runBetterModelForCurrentClip() {
  $('betterModelBar').style.opacity = '.35';
  $('betterModelProgressLabel').textContent = 'Starting the deep model…';
  $('betterModelDialog').showModal();
- await fetch(`/api/better/${c.remoteClipId}`, { method: 'POST' });
- const status = await pollBetterModel(c.remoteClipId);
+ const queued = await (await fetch(`/api/better/${c.remoteClipId}`, { method: 'POST' })).json();
+ const status = queued.status === 'no predictions'
+  ? { status: 'error', result: { error: 'the server has no fast-model results for this clip' } }
+  : await pollBetterModel(c.remoteClipId);
  $('betterModelLoading').hidden = true;
  if (status.status === 'error') {
   $('betterModelError').hidden = false;

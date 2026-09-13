@@ -310,7 +310,7 @@ The script prints a single JSON result. The server reads it through two endpoint
 - `GET /api/better/<clip_id>` returns its status, a result once finished, and
   frame-by-frame progress while it runs.
 
-A clip at or above the threshold returns `skipped` from both endpoints.
+Only clips below the threshold are sent automatically. Pressing **Run on deep model** runs any clip that has fast-model predictions, whatever its confidence score.
 
 ### Train and evaluate the fast model
 

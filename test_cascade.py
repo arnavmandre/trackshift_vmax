@@ -13,3 +13,11 @@ class CascadeTests(unittest.TestCase):
                 (root/'clip.json').write_text(json.dumps({'observations':[{'confidence':s} for s in scores]}))
                 self.assertEqual(needs_deep_model(root,'clip'),expected)
                 if not expected:self.assertEqual(enqueue_better(root,'clip'),'skipped')
+
+    def test_manual_run_is_allowed_above_threshold(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            (root/'clip.json').write_text(json.dumps({'observations':[{'confidence':.95}]}))
+            self.assertEqual(enqueue_better(root,'clip'),'skipped')
+            self.assertEqual(enqueue_better(root,'clip',manual=True),'queued')
+            self.assertEqual(enqueue_better(root,'missing',manual=True),'no predictions')

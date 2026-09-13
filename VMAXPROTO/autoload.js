@@ -76,7 +76,9 @@
         urls.set(c.id, URL.createObjectURL(blob));
       }
       c.fps = clip.fps || c.fps;
-      const useDeep = !clip.playback_only && clip.deep_model_eligible !== false;
+      // Every clip with predictions can be sent to the deep model by hand; only
+      // low-confidence clips (deep_model_eligible) are sent automatically.
+      const useDeep = !clip.playback_only;
       if (!useDeep) delete c.betterModel;
       c.remoteVideoUrl = clip.video_url; c.remotePredictionsUrl = clip.playback_only ? null : clip.predictions_url; c.remoteClipId = useDeep ? clip.id : null;
 
