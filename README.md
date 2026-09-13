@@ -36,7 +36,7 @@ Server options: `--port 8010`, `--data <folder>` (defaults to `final_demo/`).
 Needed to run the models again, export new clips, use the **Run on deep model**
 button on new clips, or run the tests.
 
-On Windows, keep `-c core.longpaths=true` in the clone command: some model files sit in deep folders and a clone into a long path otherwise fails with "Filename too long".
+On Windows, keep `-c core.longpaths=true` in the clone command, and clone into a short folder such as `C:\Users\<you>\trackshift_vmax` (folder path under 115 characters). Some model files sit in deep folders, and Windows cannot load them from a long path. `setup.ps1` stops with a clear message if the path is too long.
 
 **Before you start:** install [Git LFS](https://git-lfs.com) *before cloning*
 (the deep model checkpoint is 128 MB and stored with LFS). The setup script runs

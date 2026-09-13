@@ -15,6 +15,12 @@ $env:UV_LINK_MODE = 'copy'
 
 function Step($m) { Write-Host "`n==> $m" -ForegroundColor Cyan }
 function Warn($m) { Write-Host "WARNING: $m" -ForegroundColor Yellow }
+# Windows cannot load a DLL whose full path is over 260 characters, and the deep
+# model environment has files 133 characters deep inside the repo.
+if ($PSScriptRoot.Length -gt 115) {
+    throw "The repo folder path is too long for Windows ($($PSScriptRoot.Length) characters, limit 115):`n  $PSScriptRoot`nMove or clone the repo somewhere shorter, e.g. C:\Users\<you>\trackshift_vmax, and run setup.ps1 again."
+}
+
 function Run { & $args[0] $args[1..($args.Count - 1)]; if ($LASTEXITCODE -ne 0) { throw "Command failed: $($args -join ' ')" } }
 
 # --- uv (fast installer; also downloads Python 3.12 if you don't have it) ---
