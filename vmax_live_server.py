@@ -13,6 +13,7 @@ from pathlib import Path
 import queue
 import re
 import subprocess
+import sys
 import threading
 from urllib.parse import unquote, urlsplit
 
@@ -21,7 +22,7 @@ PROTO_HTML = REPO / 'VMAXPROTO' / 'VMAX-Steward-Review-v2.1.html'
 AUTOLOAD_JS = REPO / 'VMAXPROTO' / 'autoload.js'
 
 MODEL2_ROOT = REPO / 'vmax_model2' / 'Track_limit_detection'
-BETTER_PYTHON = MODEL2_ROOT / '.venv_bench' / 'Scripts' / 'python.exe'
+BETTER_PYTHON = MODEL2_ROOT / '.venv_bench' / ('Scripts/python.exe' if sys.platform == 'win32' else 'bin/python')
 BETTER_BRIDGE = MODEL2_ROOT / 'vmax_bridge.py'
 CONFIDENCE_ESCALATION_THRESHOLD = 0.80
 CLIP_ID_RE = re.compile(r'^[A-Za-z0-9_]+$')
@@ -58,6 +59,10 @@ def run_better_model(data_dir, clip_id):
     progress_path = data_dir / f'{clip_id}.bettermodel.progress'
     if not camera_json.is_file() or not video.is_file() or not fast_predictions.is_file():
         payload = {'status': 'error', 'result': {'error': 'missing camera_spec, video, or fast-model predictions'}}
+        result_path.write_text(json.dumps(payload))
+        return payload
+    if not BETTER_PYTHON.is_file():
+        payload = {'status': 'error', 'result': {'error': 'deep model environment not installed; run setup.ps1 (or setup.sh)'}}
         result_path.write_text(json.dumps(payload))
         return payload
     try:

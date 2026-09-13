@@ -1,0 +1,10 @@
+# Main environment (.venv): simulator, fast model (YOLO26n-pose), export, server, tests.
+# PyTorch is installed first by setup.ps1 / setup.sh, which picks the CUDA or CPU
+# build for your machine. Versions below are the ones the published results used.
+ultralytics==8.4.149
+numpy==2.5.2
+scipy==1.18.1
+opencv-python==5.0.0.93
+pillow==12.3.0
+numba==0.67.0
+matplotlib==3.11.2

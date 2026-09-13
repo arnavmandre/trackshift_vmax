@@ -14,3 +14,6 @@ docs/superpowers/
 .DS_Store
 __MACOSX/
 .claude/
+
+# Output of vmax_export.py
+vmax_live/

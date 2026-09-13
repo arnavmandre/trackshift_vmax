@@ -13,86 +13,88 @@ footage. See [Limits](#limits).
 
 ## Install and run
 
-Commands below are for Windows (PowerShell or Git Bash). On macOS/Linux, use
-`.venv/bin/python` instead of `.venv/Scripts/python.exe`.
+### Just the demo (any machine with Python)
 
-### 1. Get the code
-
-The deep model's checkpoint (128 MB) is stored with **Git LFS**. Install LFS
-*before* cloning, or you get a small placeholder file instead of the model.
+The review server uses only the Python standard library. With any Python 3.12+
+installed, no packages, GPU or model weights are needed:
 
 ```bash
-git lfs install
 git clone https://github.com/arnavmandre/trackshift_vmax
 cd trackshift_vmax
-```
-
-Already cloned without LFS? Run `git lfs pull`.
-
-### 2. Run the steward demo (Python only)
-
-The review server uses only the Python standard library. Any Python 3.12+ works,
-with no packages, GPU or model weights:
-
-```bash
 python vmax_live_server.py
 ```
 
 Open **http://127.0.0.1:8010**. It loads the 16 bundled clips in `final_demo/`
-(4 incidents × 4 camera angles) with the saved fast-model predictions and cached
-deep-model results, so the whole review flow works right away. On Windows you can
-also double-click **`start_demo.bat`**. It uses `.venv`, so create that first (step 3).
+(4 incidents × 4 camera angles) with saved fast-model predictions, metre
+distances and cached deep-model results, so the whole review flow works right
+away. On Windows you can also double-click **`start_demo.bat`**.
 
-Options: `--port 8010`, `--data <folder>` (defaults to `final_demo/`).
+Server options: `--port 8010`, `--data <folder>` (defaults to `final_demo/`).
 
-### 3. Install the fast model (YOLO26n-pose)
+### Full install: both models (one command)
 
-Needed to run the fast model again, export new clips, or run the tests. Tested
-with Python 3.12, torch 2.14 (CUDA 13.0), ultralytics 8.4, numpy 2.5 and
-opencv 5.0.
+Needed to run the models again, export new clips, use the **Run on deep model**
+button on new clips, or run the tests.
 
-```bash
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
-.venv/Scripts/python.exe -m pip install ultralytics numpy scipy opencv-python pillow
+**Before you start:** install [Git LFS](https://git-lfs.com) *before cloning*
+(the deep model checkpoint is 128 MB and stored with LFS). The setup script runs
+`git lfs pull` for you if you forgot.
+
+**Windows** (PowerShell, in the repo folder):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
-Without an NVIDIA GPU, leave out `--index-url` to get the CPU build (slower).
-FFmpeg must be on `PATH`, or set the `FFMPEG` environment variable.
-
-### 4. Install the deep model (Mask2Former / Swin-Tiny)
-
-Needed for the **Run on deep model** button and for automatically escalating
-clips below 80% confidence score. This model needs **its own environment**,
-because it uses a different PyTorch version. Never install it into `.venv`.
-Tested with Python 3.12, torch 2.11 (CUDA 12.8) and transformers 4.57.6.
+**macOS / Linux:**
 
 ```bash
+./setup.sh
+```
+
+The script:
+
+1. installs [uv](https://docs.astral.sh/uv/) if missing (it also downloads Python 3.12 if you don't have it);
+2. checks the deep model checkpoint and pulls it with Git LFS if needed;
+3. detects an NVIDIA GPU and picks matching PyTorch builds, or CPU builds otherwise;
+4. creates **two separate environments**, pinned to the versions the published results used:
+   - `.venv`: fast model (YOLO26n-pose), export, server, tests (`requirements-fast.txt`, torch 2.14)
+   - `vmax_model2/Track_limit_detection/.venv_bench`: deep model (`requirements-deep.txt`, torch 2.11)
+5. checks that both environments import correctly and warns if FFmpeg is missing
+   (FFmpeg is only needed to render new simulator clips).
+
+Options: `-Cpu` / `--cpu` forces CPU builds, `-SkipDeep` / `--skip-deep` skips the deep model.
+
+| GPU | Fast model | Deep model |
+|---|---|---|
+| NVIDIA, driver 580+ | CUDA 13.0 | CUDA 12.8 |
+| NVIDIA, driver 570–579 | CPU (update driver for GPU) | CUDA 12.8 |
+| None / other / `-Cpu` | CPU | CPU |
+| macOS | PyPI build | PyPI build |
+
+The two environments must stay separate: they need different PyTorch versions,
+so the server always runs the deep model in its own process. If `.venv_bench` is
+missing, the demo still works from the cached deep-model results.
+
+### Check the install
+
+```bash
+.venv/Scripts/python.exe -m unittest discover              # macOS/Linux: .venv/bin/python
 cd vmax_model2/Track_limit_detection
-python -m venv .venv_bench
-.venv_bench/Scripts/python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-.venv_bench/Scripts/python.exe -m pip install -r requirements.txt
-cd ../..
+.venv_bench/Scripts/python.exe -m unittest tests.test_vmax_bridge   # runs real deep-model inference
 ```
 
-The server finds this environment on its own. If it is missing, the demo still
-runs and uses the cached deep-model results. A GPU is strongly recommended.
+### Export clips with the fast model
 
-### 5. Check the install
+The exact fast model behind `final_demo/` is in `fast_model/` (weights,
+selection record and its 160 blind-test clips from 40 incidents), so this works on a fresh clone:
 
 ```bash
-.venv/Scripts/python.exe -m unittest discover
-cd vmax_model2/Track_limit_detection
-.venv_bench/Scripts/python.exe -m unittest tests.test_vmax_bridge
+.venv/Scripts/python.exe vmax_export.py --max-incidents 2      # writes vmax_live/
+.venv/Scripts/python.exe vmax_live_server.py --data vmax_live
 ```
 
-The second command runs real deep-model inference.
-
-The bundled **`final_demo/`** folder has everything playback needs: 16 clips (4
-incidents × 4 camera angles), their camera calibration, saved fast-model
-predictions, and cached deep-model results. No GPU, model weights or inference
-are needed just to watch and review.
-
+Options: `--blind`, `--weights`, `--selection`, `--out`, `--max-incidents`.
 ## How the pipeline works
 
 ```
@@ -273,19 +275,18 @@ its own process.
 | Main | `.venv/` | simulator, fast model, export, server, tests |
 | Deep model | `vmax_model2/Track_limit_detection/.venv_bench/` | `vmax_bridge.py` only |
 
-The main environment has no `pip`. Install packages with
-`uv pip install --python .venv/Scripts/python.exe <package>`. FFmpeg must be on
+`setup.ps1` / `setup.sh` create both (see [Install and run](#install-and-run)). To add a package,
+use `uv pip install --python .venv/Scripts/python.exe <package>`. FFmpeg must be on
 `PATH`, or set the `FFMPEG` environment variable to its full path.
 
 ### Serve your own clips
 
 ```bash
-# Run the fast model on blind-test clips and write the outputs
-# (edit MAX_INCIDENTS in vmax_export.py to change how many incidents)
-.venv/Scripts/python.exe vmax_export.py
+# Run the fast model on the bundled blind-test clips (fast_model/) into vmax_live/
+.venv/Scripts/python.exe vmax_export.py --max-incidents 8
 
 # Serve that folder instead of final_demo/
-.venv/Scripts/python.exe vmax_live_server.py --data C:/Users/<you>/trackshift_runs/kerb960/vmax_live
+.venv/Scripts/python.exe vmax_live_server.py --data vmax_live
 ```
 
 When the server starts, it prints how many clips are below the threshold and how

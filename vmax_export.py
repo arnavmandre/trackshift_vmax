@@ -15,13 +15,17 @@ import numpy as np
 import torch
 from ultralytics import YOLO
 
-sys.path.insert(0, str(Path('C:/Users/arnav/OneDrive/Desktop/VMAX_Trackshift')))
+REPO = Path(__file__).resolve().parent
+sys.path.insert(0, str(REPO))
 import experiment as e
 
-BLIND_ROOT = Path('C:/Users/arnav/trackshift_runs/kerb960/experiment/fresh_blind')
-SELECTION = Path('C:/Users/arnav/trackshift_runs/kerb960/experiment/selection.json')
-WEIGHTS = Path('C:/Users/arnav/trackshift_runs/kerb960/experiment/selected.pt')
-OUT_DIR = Path('C:/Users/arnav/trackshift_runs/kerb960/vmax_live')
+# Defaults are inside the repo, so a fresh clone can export without any local
+# folders. fast_model/ holds the exact weights behind final_demo/. Each one can
+# be overridden on the command line.
+BLIND_ROOT = REPO / 'fast_model' / 'fresh_blind'
+SELECTION = REPO / 'fast_model' / 'selection.json'
+WEIGHTS = REPO / 'fast_model' / 'selected.pt'
+OUT_DIR = REPO / 'vmax_live'
 
 # The prototype's UI names tyres FL/FR/RL/RR; our model's keypoint channels are
 # ordered per PLAN['keypoints']. Map by name, not position, so a future keypoint
@@ -191,10 +195,16 @@ if __name__ == '__main__':
                         help='add car identity to an existing export folder instead of exporting')
     parser.add_argument('--threshold', type=float, default=0.5,
                         help='detection threshold for --relabel (the selected operating threshold)')
+    parser.add_argument('--blind', type=Path, default=BLIND_ROOT, help='folder with manifest.json and the clips')
+    parser.add_argument('--weights', type=Path, default=WEIGHTS, help='fast model weights (.pt)')
+    parser.add_argument('--selection', type=Path, default=SELECTION, help='selection.json for those weights')
+    parser.add_argument('--out', type=Path, default=OUT_DIR, help='output folder to serve with vmax_live_server.py --data')
+    parser.add_argument('--max-incidents', type=int, default=8, help='how many incidents to export (4 clips each)')
     cli = parser.parse_args()
     if cli.relabel:
         relabel_export_dir(cli.relabel, cli.threshold)
         sys.exit(0)
+    BLIND_ROOT, WEIGHTS, SELECTION, OUT_DIR = cli.blind, cli.weights, cli.selection, cli.out
 
     manifest = json.loads((BLIND_ROOT / 'manifest.json').read_text())
     selection = json.loads(SELECTION.read_text())
@@ -202,10 +212,8 @@ if __name__ == '__main__':
         raise ValueError('selected model changed since selection.json was written')
     threshold = selection['winner']['metrics']['threshold']
 
-    # Kept small deliberately while the model/UI interaction is still being
-    # worked out -- eager-loads all of these behind one loading screen. Raise
-    # this once that's solid; see README note in VMAXPROTO/ for the tradeoff.
-    MAX_INCIDENTS = 8  # 32 clips
+    # The UI eager-loads every clip behind one loading screen, so keep this small.
+    MAX_INCIDENTS = cli.max_incidents
 
     clips = manifest['clips']
     # Stable, human-readable numbering: incidents ordered by family_id, angles
