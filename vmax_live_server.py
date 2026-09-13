@@ -3,7 +3,7 @@ auto-loaded, via the prototype's own documented integration surface.
 
 The prototype's HTML file on disk is never modified: it is read fresh and one
 <script src="/autoload.js"> tag is appended before </body> at serve time.
-Standard library only, matching review_server.py's approach.
+Standard library only, so the demo runs with any Python and no installs.
 """
 import argparse
 import functools

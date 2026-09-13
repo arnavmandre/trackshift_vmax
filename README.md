@@ -144,7 +144,7 @@ computed.
 | Runs on | every clip | clips with mean confidence score below 0.80 |
 | Time per 2 s single-camera clip | ~0.39 s (RTX 5060, includes decoding) | ~7.5 s (includes ~5 s checkpoint load) |
 | Code | `experiment.py`, `geometry.py` | `vmax_model2/Track_limit_detection/` |
-| Weights | `trained_model/`, `weights/` | `training_runs/boundary_heatmaps_…/best_model/` (Git LFS, 128 MB) |
+| Weights | `fast_model/selected.pt` (6 MB) | `training_runs/boundary_heatmaps_…/best_model/` (Git LFS, 128 MB) |
 
 Both models use the same track model (a 40 m radius corner, 7 m track
 half-width) and the same camera calibration format. This is what lets the deep
@@ -338,7 +338,7 @@ checkpoint still won selection.
 ### Tests
 
 ```bash
-.venv/Scripts/python.exe -m unittest discover        # 33 tests: geometry, rendering, experiment, cascade, car identity, server
+.venv/Scripts/python.exe -m unittest discover        # 30 tests: geometry, rendering, experiment, cascade, car identity, server
 cd vmax_model2/Track_limit_detection
 .venv_bench/Scripts/python.exe -m unittest tests.test_vmax_bridge   # 2 tests, runs real inference
 ```
@@ -382,11 +382,6 @@ These are visual demos, not accuracy benchmarks.
   motion blur.
 - Driver identity, telemetry fusion and moving-camera calibration are not
   implemented. See `REQUIREMENTS_STATUS.md`.
-
-## Older steward console
-
-`review_server.py` (port 8000) with `steward_ui/` is the earlier, single-model
-review console. It still works, but the demo above supersedes it.
 
 ## Further documentation
 

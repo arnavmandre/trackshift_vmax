@@ -1,8 +1,0 @@
-{
-  "predictions_sha256": "2b1568e4ce0cf066163f625e8c898c871c40c4f982d5ceaf5b2a5040fab5b41e",
-  "manifest_sha256": "665b33488c455a12bbfb0c64107ecddceb126433a5d5445b50d3ce858cc8efcb",
-  "weights_sha256": "281d5f2755df69f81e94ba4336dbd03f5489604be2685a968b34cf17a058052e",
-  "split": "test",
-  "seconds": 26.77223777770996,
-  "labels_read": false
-}
