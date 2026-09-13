@@ -123,7 +123,7 @@ Options: `--blind`, `--weights`, `--selection`, `--out`, `--max-incidents`.
    score** (the fast model's average detection confidence across the clip).
    - **Below 0.80:** the clip goes to the deep model, one job at a time in the
      background. The result is cached as `<clip>.bettermodel.json`.
-   - **0.80 or higher:** fast model only. These clips are never sent to the deep model.
+   - **0.80 or higher:** fast model only, unless a steward presses **Run on deep model**.
 5. **Deep model.** `vmax_bridge.py` crops each frame around the car, using the
    fast model's detected tyre points, and runs the deep model on the crop. That
    model predicts the tyre boundary edges and decides off track, on track, or
@@ -141,7 +141,7 @@ computed.
 |---|---|---|
 | Architecture | YOLO26n-pose (CNN) | Mask2Former pixel decoder + Swin-Tiny backbone, custom heatmap head |
 | Output | 4 tyre contact points + confidence score, per car per frame | 8 tyre boundary endpoints, then off / on / inconclusive |
-| Runs on | every clip | clips with mean confidence score below 0.80 |
+| Runs on | every clip | clips with mean confidence score below 0.80, or any clip on request |
 | Time per 2 s single-camera clip | ~0.39 s (RTX 5060, includes decoding) | ~7.5 s (includes ~5 s checkpoint load) |
 | Code | `experiment.py`, `geometry.py` | `vmax_model2/Track_limit_detection/` |
 | Weights | `fast_model/selected.pt` (6 MB) | `training_runs/boundary_heatmaps_…/best_model/` (Git LFS, 128 MB) |
